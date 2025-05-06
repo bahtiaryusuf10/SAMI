@@ -1,0 +1,41 @@
+export const dataPieChart = [
+  // {
+  //   id: 'css',
+  //   label: 'css',
+  //   value: 368,
+  //   color: 'hsl(200, 70%, 50%)',
+  // },
+  // {
+  //   id: 'scala',
+  //   label: 'scala',
+  //   value: 93,
+  //   color: 'hsl(93, 70%, 50%)',
+  // },
+  // {
+  //   id: 'c',
+  //   label: 'c',
+  //   value: 499,
+  //   color: 'hsl(217, 70%, 50%)',
+  // },
+  // {
+  //   id: 'javascript',
+  //   label: 'javascript',
+  //   value: 282,
+  //   color: 'hsl(316, 70%, 50%)',
+  // },
+  // {
+  //   id: 'lisp',
+  //   label: 'lisp',
+  //   value: 19,
+  //   color: 'hsl(50, 70%, 50%)',
+  // },
+  { id: 1, project: 'Project A', language: 'JavaScript' },
+  { id: 2, project: 'Project B', language: 'Python' },
+  { id: 3, project: 'Project C', language: 'JavaScript' },
+  { id: 4, project: 'Project D', language: 'C++' },
+  { id: 5, project: 'Project E', language: 'Python' },
+  { id: 6, project: 'Project F', language: 'Python' },
+  { id: 7, project: 'Project G', language: 'JavaScript' },
+  { id: 8, project: 'Project H', language: 'PHP' },
+  { id: 9, project: 'Project I', language: 'PHP' },
+];
