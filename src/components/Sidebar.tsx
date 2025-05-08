@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -39,26 +39,53 @@ const sidebarItems = [
   },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({
+  mobileSidebarOpen,
+}: {
+  mobileSidebarOpen: boolean;
+}) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 640 && window.innerWidth < 768) {
+        setCollapsed(true);
+      } else {
+        setCollapsed(false);
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // sm:	640px
+  // md:	768px
+  // lg:	1024px
+  // xl:	1280px
+  // 2xl:	1536px
 
   return (
     <div
       className={`h-full bg-white shadow-md border-r transition-all duration-300 rounded-lg flex flex-col justify-between ${
-        collapsed ? 'w-16 items-center py-4' : 'w-64'
+        collapsed ? 'w-16 items-center py-4' : 'w-48 lg:w-56 xl:w-64'
       }`}
     >
       <div className="w-full">
         {collapsed ? (
           <div className="flex flex-col justify-center items-center mb-4 gap-3">
             <Image src="/Logo.png" alt="logo" width={33} height={33} />
-            <button
-              onClick={() => setCollapsed(false)}
-              className="hover:bg-gray-100 p-1 rounded-full"
-            >
-              <ChevronRight size={20} className="text-blue-400" />
-            </button>
+            {!mobileSidebarOpen && (
+              <button
+                onClick={() => setCollapsed(false)}
+                className="hover:bg-gray-100 p-1 rounded-full"
+              >
+                <ChevronRight size={20} className="text-blue-400" />
+              </button>
+            )}
           </div>
         ) : (
           <div className="flex justify-between items-center p-4 border-b">
@@ -68,15 +95,17 @@ export default function Sidebar() {
                 SAMI
               </span>
             </div>
-            <button
-              onClick={() => setCollapsed(true)}
-              className="hover:bg-gray-100 p-1 rounded-full"
-            >
-              <ChevronLeft
-                size={20}
-                className="text-black hover:text-blue-400"
-              />
-            </button>
+            {!mobileSidebarOpen && (
+              <button
+                onClick={() => setCollapsed(true)}
+                className="hover:bg-gray-100 p-1 rounded-full"
+              >
+                <ChevronLeft
+                  size={20}
+                  className="text-black hover:text-blue-400"
+                />
+              </button>
+            )}
           </div>
         )}
 
