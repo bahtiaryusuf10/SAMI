@@ -1,9 +1,22 @@
+'use client';
+
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
 export default function Navbar() {
+  const router = useRouter();
+  const supabase = createSupabaseBrowserClient();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+
+    router.push('/auth');
+  };
+
   return (
     <div className="flex items-center gap-4">
       <Avatar>
@@ -18,11 +31,11 @@ export default function Navbar() {
           Administrator
         </span>
       </div>
-      <Link href={'/sign-in'}>
+      <Link href={'/auth'}>
         <Button
           variant="outline"
-          // size="icon"
           className="w-7 h-7 rounded-5 bg-red-500 hover:bg-red-400"
+          onClick={handleLogout}
         >
           <LogOut className="h-5 w-5 text-white" />
         </Button>

@@ -1,4 +1,4 @@
-import { LoginForm } from '@/components/form/LoginForm';
+import { AuthTab } from '@/components/tabs/AuthTab';
 import Image from 'next/image';
 
 export default function LoginPage() {
@@ -26,7 +26,7 @@ export default function LoginPage() {
               clearer, and a bit more fun to explore.
             </p>
           </div>
-          <LoginForm />
+          <AuthTab />
         </div>
       </div>
 
@@ -40,7 +40,13 @@ export default function LoginPage() {
           </p>
         </div>
         <div className="flex item-center justify-center py-4">
-          <Image src="/login.png" alt="logo" width={811} height={68} />
+          <Image
+            src="/login.png"
+            alt="logo"
+            width={811}
+            height={68}
+            style={{ width: 'auto', height: 'auto' }}
+          />
         </div>
       </div>
     </div>
