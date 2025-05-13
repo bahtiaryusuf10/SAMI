@@ -1,7 +1,15 @@
+import { ScatterDatum } from '@/types/charts/scatter';
 import { ResponsiveScatterPlot } from '@nivo/scatterplot';
 
 interface MyResponsiveScatterProps {
-  data: { id: string; data: { x: number; y: number }[] }[];
+  // data: {
+  //   id: string;
+  //   data: {
+  //     x: number;
+  //     y: number;
+  //   }[];
+  // }[];
+  data: ScatterDatum[];
 }
 
 const MyResponsiveScatter = ({ data }: MyResponsiveScatterProps) => (

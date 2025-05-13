@@ -71,7 +71,7 @@ export default function Sidebar({
   return (
     <div
       className={`h-full bg-white shadow-md border-r transition-all duration-300 rounded-lg flex flex-col justify-between ${
-        collapsed ? 'w-16 items-center py-4' : 'w-48 lg:w-56 xl:w-64'
+        collapsed ? 'w-16 items-center py-4' : 'w-48 lg:w-58 xl:w-68'
       }`}
     >
       <div className="w-full">

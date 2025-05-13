@@ -1,12 +1,20 @@
 'use client';
+
 import MyResponsiveBar from '@/components/charts/Bar';
-import MyResponsivePie from '@/components/charts/Pie';
+import MyResponsiveBox from '@/components/charts/Box';
 import MyResponsiveLine from '@/components/charts/Line';
+import MyResponsivePie from '@/components/charts/Pie';
+import MyResponsiveScatter from '@/components/charts/Scatter';
 import SumCard from '@/components/SumCard';
-import { dataBarChart } from '@/data/dataBarChart';
-import { dataLineChart } from '@/data/dataLineChart';
-import { dataBoxChart } from '@/data/dataBoxChart';
-import { dataScatterChart } from '@/data/dataScatterChart';
+
+import { BarDatum } from '@/types/charts/bar';
+import { BoxDatum } from '@/types/charts/box';
+import { LineDatum } from '@/types/charts/line';
+import { ScatterDatum } from '@/types/charts/scatter';
+
+import { useFilteredBarChartData } from '@/hooks/use-filtered-bar-chart-data';
+import { useAggregatedPieData } from '@/hooks/use-aggregated-pie-chart-data';
+
 import {
   Select,
   SelectContent,
@@ -14,20 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { SelectGroup, SelectLabel } from '@radix-ui/react-select';
 import BarChartSettings from '@/components/chart-settings/BarChartSettings';
 
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
-
-import { useFilteredBarChartData } from '@/hooks/use-filtered-bar-chart-data';
-import { useAggregatedPieData } from '@/hooks/use-aggregated-pie-chart-data';
-import MyResponsiveBox from '@/components/charts/Box';
-import MyResponsiveScatter from '@/components/charts/Scatter';
-
-const ResponsiveGridLayout = WidthProvider(Responsive);
 
 export default function Home() {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
@@ -37,10 +38,40 @@ export default function Home() {
     'nivo' | 'accent' | 'paired' | 'spectral'
   >('nivo');
   const [showLabels, setShowLabels] = useState<true | false>(true);
+  const ResponsiveGridLayout = WidthProvider(Responsive);
+
+  const [dataBarChart, setDataBarChart] = useState<BarDatum[]>([]);
+  const [dataBoxChart, setDataBoxChart] = useState<BoxDatum[]>([]);
+  const [dataLineChart, setDataLineChart] = useState<LineDatum[]>([]);
+  const [dataScatterChart, setDataScatterChart] = useState<ScatterDatum[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const bar = await import('@/data/dataBarChart').then(
+        (m) => m.dataBarChart
+      );
+      const box = await import('@/data/dataBoxChart').then(
+        (m) => m.dataBoxChart
+      );
+      const line = await import('@/data/dataLineChart').then(
+        (m) => m.dataLineChart
+      );
+      const scatter = await import('@/data/dataScatterChart').then(
+        (m) => m.dataScatterChart
+      );
+
+      setDataBarChart(bar);
+      setDataBoxChart(box);
+      setDataLineChart(line);
+      setDataScatterChart(scatter);
+    };
+
+    loadData();
+  }, []);
 
   const allCountries = useMemo(() => {
-    return dataBarChart.map((item) => item.country);
-  }, []);
+    return dataBarChart ? dataBarChart.map((item) => item.country) : [];
+  }, [dataBarChart]);
 
   // const filteredData = selectedCountry
   //   ? dataBarChart.filter((item) => item.country === selectedCountry)

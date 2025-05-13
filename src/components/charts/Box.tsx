@@ -1,14 +1,16 @@
+import { BoxDatum } from '@/types/charts/box';
 import { ResponsiveBoxPlot } from '@nivo/boxplot';
 
 interface MyResponsiveBoxProps {
-  data: {
-    group: string;
-    subgroup: string;
-    mu: number;
-    sd: number;
-    n: number;
-    value: number;
-  }[];
+  // data: {
+  //   group: string;
+  //   subgroup: string;
+  //   mu: number;
+  //   sd: number;
+  //   n: number;
+  //   value: number;
+  // }[];
+  data: BoxDatum[];
 }
 
 const MyResponsiveBox = ({ data }: MyResponsiveBoxProps) => (

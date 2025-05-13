@@ -1,33 +1,12 @@
 'use client';
 
-import { dataBarChart } from '@/data/dataBarChart';
 import { ComputedDatum, ResponsiveBar } from '@nivo/bar';
 import { getOrdinalColorScale } from '@nivo/colors';
 import { useState } from 'react';
-
-// type BarDatum = {
-//   country: string;
-//   'hot dog': number;
-//   'hot dogColor': string;
-//   burger: number;
-//   burgerColor: string;
-//   sandwich: number;
-//   sandwichColor: string;
-//   kebab: number;
-//   kebabColor: string;
-//   fries: number;
-//   friesColor: string;
-//   donut: number;
-//   donutColor: string;
-// };
-
-type BarDatum = {
-  country: string;
-  [key: string]: string | number;
-};
+import { BarDatum } from '@/types/charts/bar';
 
 type MyResponsiveBarProps = {
-  data: typeof dataBarChart;
+  data: BarDatum[];
   layout: 'horizontal' | 'vertical';
   groupMode: 'stacked' | 'grouped';
   colorPalette: 'nivo' | 'accent' | 'paired' | 'spectral';
@@ -233,7 +212,8 @@ const MyResponsiveBar = ({
             <strong>Negara:</strong> {selected.indexValue}
           </p>
           <p>
-            <strong>Jumlah:</strong> {selected.data[selected.id]}
+            <strong>Jumlah:</strong>{' '}
+            {selected.data[selected.id as keyof BarDatum]}
           </p>
         </div>
       )}

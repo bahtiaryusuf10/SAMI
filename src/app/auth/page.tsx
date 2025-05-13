@@ -3,12 +3,12 @@ import Image from 'next/image';
 
 export default function LoginPage() {
   return (
-    <div className="flex flex-col-reverse lg:flex-row gap-4 bg-blue-400">
+    <div className="flex flex-col-reverse lg:flex-row gap-4 bg-blue-400 min-h-screen">
       {/* Kiri */}
       <div className="w-full lg:w-2/5">
-        <div className="flex flex-col justify-center min-h-[35rem] lg:min-h-screen bg-blue-100 rounded-none lg:rounded-tr-4xl lg:rounded-br-4xl">
+        <div className="flex flex-col justify-center min-h-[45rem] lg:h-full bg-blue-100 rounded-none lg:rounded-tr-4xl lg:rounded-br-4xl">
           <div className="flex flex-col px-20 lg:px-20 xl:px-30 mb-10 sm:mb-8">
-            <div className="flex flex-row items-center">
+            <div className="flex flex-row items-center justify-center lg:justify-normal">
               <h1 className="text-4xl font-semibold text-black py-3">
                 Welcome!
               </h1>
@@ -31,7 +31,7 @@ export default function LoginPage() {
       </div>
 
       {/* Kanan */}
-      <div className="w-full lg:w-3/5 flex flex-col p-10 mt-4 sm:min-h-[42rem] sm:mt-10">
+      <div className="w-full lg:w-3/5 flex flex-col p-10 mt-4 sm:mt-10">
         <div className="px-8">
           <h1 className="text-5xl font-bold text-white py-3">SAMI</h1>
           <p className="text-white text-lg lg:text-lg ml-5">
