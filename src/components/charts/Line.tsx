@@ -1,7 +1,15 @@
+import { LineDatum } from '@/types/charts/line';
 import { ResponsiveLine } from '@nivo/line';
 
 interface MyResponsiveLineProps {
-  data: { id: string; data: { x: string; y: number }[] }[];
+  // data: {
+  //   id: string;
+  //   data: {
+  //     x: string;
+  //     y: number;
+  //   }[];
+  // }[];
+  data: LineDatum[];
 }
 
 const MyResponsiveLine = ({ data }: MyResponsiveLineProps) => (
