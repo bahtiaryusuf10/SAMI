@@ -26,11 +26,13 @@ export default function DashboardLayout({
       </Sheet>
 
       <div className="min-h-screen flex overflow-hidden">
-        <div className="hidden sm:block bg-blue-100 p-3 flex-none">
+        <div className="hidden sm:block bg-blue-200 p-3 flex-none">
           <Sidebar mobileSidebarOpen={mobileSidebarOpen} />
         </div>
         <div className="flex-1 flex flex-col">
-          <Navbar onOpenSidebar={() => setMobileSidebarOpen(true)} />
+          <div className="bg-blue-400 p-2 py-3 flex items-center justify-between sm:justify-end shadow-md z-10">
+            <Navbar onOpenSidebar={() => setMobileSidebarOpen(true)} />
+          </div>
           <main className="flex-1 overflow-y-auto p-4 bg-blue-400">
             {children}
           </main>

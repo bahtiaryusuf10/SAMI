@@ -124,8 +124,8 @@ export default function Sidebar({
                   <Link
                     href={item.href}
                     key={item.label}
-                    className={`flex items-center gap-4 py-2 px-2 ml-1 rounded-md transition-all ${
-                      collapsed ? 'justify-center' : ''
+                    className={`flex items-center gap-4 py-2 rounded-md transition-all ${
+                      collapsed ? 'justify-center' : 'px-2 ml-1'
                     } ${
                       isActive
                         ? collapsed
