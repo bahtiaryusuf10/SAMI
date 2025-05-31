@@ -45,7 +45,7 @@ import {
   getJenisPekerjaanByStatus,
   // getKpiLulusanData,
   getStatusLulusanData,
-} from '@/data/dataCapaianLulusan';
+} from '@/data/dataLulusanBekerja';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 // import { extractKeysFromData } from '@/utils/chart';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -73,7 +73,7 @@ const detailDataSchema = z.object({
 
 type DetailDataSchema = z.infer<typeof detailDataSchema>;
 
-export default function CapaianLulusanPage() {
+export default function LulusanBekerjaPage() {
   // const [kpiLulusan, setKpiLulusan] = useState<any[]>([]);
   const [statusLulusan, setStatusLulusan] = useState<any[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
@@ -117,11 +117,13 @@ export default function CapaianLulusanPage() {
 
   useEffect(() => {
     getStatusLulusanData().then((data) => {
-      const transformed = data?.map((item) => ({
-        id: item.status_bekerja,
-        label: item.status_bekerja,
-        value: item.jumlah,
-      }));
+      const transformed = data?.map(
+        (item: { status_bekerja: string; jumlah: number }) => ({
+          id: item.status_bekerja,
+          label: item.status_bekerja,
+          value: item.jumlah,
+        })
+      );
       setStatusLulusan(transformed);
     });
   }, []);
@@ -211,11 +213,13 @@ export default function CapaianLulusanPage() {
           // });
 
           const data = await getStatusLulusanData();
-          const transformed = data?.map((item) => ({
-            id: item.status_bekerja,
-            label: item.status_bekerja,
-            value: item.jumlah,
-          }));
+          const transformed = data?.map(
+            (item: { status_bekerja: string; jumlah: number }) => ({
+              id: item.status_bekerja,
+              label: item.status_bekerja,
+              value: item.jumlah,
+            })
+          );
           setStatusLulusan(transformed);
         }
       )
@@ -244,7 +248,11 @@ export default function CapaianLulusanPage() {
       });
   };
 
-  const handleExportXls = async (data, fileName = 'data.xlsx') => {
+  type Row = {
+    [key: string]: string | number | boolean | null;
+  };
+
+  const handleExportXls = async (data: Row[], fileName = 'data.xlsx') => {
     try {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Sheet 1');
@@ -337,7 +345,7 @@ export default function CapaianLulusanPage() {
           <div
             ref={chartRef}
             id="status-lulusan-chart"
-            className="h-[500px] w-1/2 bg-white shadow rounded-md p-4"
+            className="h-[500px] w-1/2 bg-white shadow-[0_0_10px_rgba(0,0,0,0.15)] rounded-md p-4"
           >
             {/* Breadcrumb Section */}
             <div className="flex flex-row justify-between">
@@ -421,7 +429,7 @@ export default function CapaianLulusanPage() {
                 <MyResponsivePie
                   data={selectedStatus ? jenisPekerjaan : statusLulusan}
                   colorPalette="nivo"
-                  onClickSlice={(data) => setSelectedStatus(data.id)}
+                  onClickSlice={(data) => setSelectedStatus(String(data.id))}
                 />
               )}
             </div>

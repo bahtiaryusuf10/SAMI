@@ -5,35 +5,86 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { Separator } from './ui/separator';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 const sidebarItems = [
   {
-    title: 'MENU',
+    title: 'MAIN',
     items: [
       {
-        icon: '/dashboard1.png',
+        iconImage: '/dashboard.png',
         label: 'Dashboard',
         href: '/',
       },
+    ],
+  },
+  {
+    title: 'INDIKATOR KINERJA UTAMA',
+    items: [
       {
-        icon: '/admin.png',
-        label: 'Capaian Lulusan',
-        href: '/capaian-lulusan',
+        iconImage: '/lulusan-bekerja.png',
+        label: 'Lulusan Bekerja',
+        href: '/lulusan-bekerja',
       },
       {
-        icon: '/admin.png',
-        label: 'Aktivitas Mahasiswa',
-        href: '/aktivitas-mahasiswa',
+        iconImage: '/pengalaman-mahasiswa.png',
+        label: 'Pengalaman Mahasiswa',
+        href: '/pengalaman-mahasiswa',
       },
       {
-        icon: '/admin.png',
+        iconImage: '/aktivitas-dosen.png',
         label: 'Aktivitas Dosen',
         href: '/aktivitas-dosen',
       },
       {
-        icon: '/admin.png',
-        label: 'Kemitraan & Internasionalisasi',
-        href: '/kemitraan-dan-internasionalisasi',
+        iconImage: '/praktisi-mengajar.png',
+        label: 'Praktisi Mengajar',
+        href: '/praktisi-mengajar',
+      },
+      {
+        iconImage: '/karya-dosen-terdampak.png',
+        label: 'Karya Dosen Terdampak',
+        href: '/karya-dosen-terdampak',
+      },
+      {
+        iconImage: '/kerja-sama-global.png',
+        label: 'Kerja Sama Global',
+        href: '/kerja-sama-global',
+      },
+      {
+        iconImage: '/kelas-kolaboratif.png',
+        label: 'Kelas Kolaboratif',
+        href: '/kelas-kolaboratif',
+      },
+      {
+        iconImage: '/standar-internasional.png',
+        label: 'Standar Internasional',
+        href: '/standar-internasional',
+      },
+    ],
+  },
+  {
+    title: 'DATA MASTER',
+    items: [
+      {
+        iconImage: '/person.png',
+        label: 'Mahasiswa',
+        href: '/mahasiswa',
+      },
+      {
+        iconImage: '/person.png',
+        label: 'Dosen',
+        href: '/dosen',
+      },
+      {
+        iconImage: '/program-studi.png',
+        label: 'Program Studi',
+        href: '/program-studi',
       },
     ],
   },
@@ -77,7 +128,7 @@ export default function Sidebar({
       <div className="w-full">
         {collapsed ? (
           <div className="flex flex-col justify-center items-center mb-4 gap-3">
-            <Image src="/Logo.png" alt="logo" width={33} height={33} />
+            <Image src="/sami-logo.png" alt="logo" width={42} height={42} />
             {!mobileSidebarOpen && (
               <button
                 onClick={() => setCollapsed(false)}
@@ -90,8 +141,8 @@ export default function Sidebar({
         ) : (
           <div className="flex justify-between items-center p-4 border-b">
             <div className="flex items-center gap-2">
-              <Image src="/Logo.png" alt="logo" width={33} height={33} />
-              <span className="text-xl font-extrabold text-blue-400 whitespace-nowrap">
+              <Image src="/sami-logo.png" alt="logo" width={45} height={45} />
+              <span className="text-3xl font-extrabold text-blue-400 whitespace-nowrap">
                 SAMI
               </span>
             </div>
@@ -109,41 +160,65 @@ export default function Sidebar({
           </div>
         )}
 
-        <div className="mt-4 text-sm px-2">
-          {sidebarItems.map((section) => (
-            <div className="flex flex-col gap-2" key={section.title}>
+        <div className={`text-sm ${collapsed ? 'px-3' : 'px-4'}`}>
+          {sidebarItems.map((section, index) => (
+            <div className="flex flex-col gap-1" key={section.title}>
               {!collapsed && (
-                <span className="mb-2 mt-4 text-gray-400 text-xs font-semibold">
+                <span className="mb-1 mt-6 text-gray-400 text-xs font-semibold">
                   {section.title}
                 </span>
               )}
-              {section.items.map((item) => {
+
+              {section.items.map((item, itemIndex) => {
                 const isActive = pathname === item.href;
 
                 return (
                   <Link
                     href={item.href}
                     key={item.label}
-                    className={`flex items-center gap-4 py-2 rounded-md transition-all ${
+                    className={`flex items-center gap-3 py-2 rounded-md transition-all ${
                       collapsed ? 'justify-center' : 'px-2 ml-1'
                     } ${
                       isActive
                         ? collapsed
                           ? 'bg-blue-100'
-                          : 'text-blue-400 font-semibold'
+                          : 'bg-blue-100 text-blue-400 font-semibold'
                         : 'hover:bg-gray-100 text-gray-500 font-light'
                     }`}
                   >
-                    <Image
-                      src={item.icon}
-                      alt={item.label}
-                      width={20}
-                      height={20}
-                    />
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Image
+                          src={item.iconImage}
+                          alt={item.label}
+                          width={20}
+                          height={20}
+                          className="cursor-pointer"
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side={collapsed ? 'right' : 'top'}
+                        align="center"
+                        sideOffset={8}
+                      >
+                        <p>
+                          {section.title === 'INDIKATOR KINERJA UTAMA'
+                            ? `IKU ${itemIndex + 1} `
+                            : ``}
+                          {item.label}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
                     {!collapsed && <span>{item.label}</span>}
                   </Link>
                 );
               })}
+
+              {collapsed && index < sidebarItems.length - 1 && (
+                <div className="my-2">
+                  <Separator className="w-10 mx-auto bg-gray-300" />
+                </div>
+              )}
             </div>
           ))}
         </div>
