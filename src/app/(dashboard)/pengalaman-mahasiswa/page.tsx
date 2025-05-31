@@ -1,7 +1,7 @@
 export default function AuditorPage() {
   return (
     <div className="">
-      <h1>Aktivitas Mahasiswa Page</h1>
+      <h1>Pengalaman Mahasiswa Page</h1>
     </div>
   );
 }

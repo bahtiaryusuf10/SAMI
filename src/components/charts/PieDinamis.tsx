@@ -7,7 +7,7 @@ interface MyResponsivePieProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[];
   colorPalette?: 'nivo' | 'accent' | 'paired' | 'spectral';
-  onClickSlice?: (data: { id: string }) => void;
+  onClickSlice?: (datum: { id: string | number }) => void;
 }
 
 const MyResponsivePie = ({

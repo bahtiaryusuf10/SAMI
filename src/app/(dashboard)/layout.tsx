@@ -30,7 +30,7 @@ export default function DashboardLayout({
           <Sidebar mobileSidebarOpen={mobileSidebarOpen} />
         </div>
         <div className="flex-1 flex flex-col">
-          <div className="bg-blue-400 p-2 py-3 flex items-center justify-between sm:justify-end shadow-md z-10">
+          <div className="bg-blue-400 p-2 py-3 flex items-center justify-between sm:justify-end shadow-[0_2px_5px_rgba(0,0,0,0.15)] z-10">
             <Navbar onOpenSidebar={() => setMobileSidebarOpen(true)} />
           </div>
           <main className="flex-1 overflow-y-auto p-4 bg-blue-400">
