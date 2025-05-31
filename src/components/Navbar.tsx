@@ -17,12 +17,13 @@ export default function Navbar({
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    sessionStorage.removeItem('chatMessages');
 
     router.push('/auth');
   };
 
   return (
-    <div className="bg-blue-400 p-2 flex items-center justify-between sm:justify-end shadow-md z-10">
+    <>
       <Button
         variant="ghost"
         size="icon"
@@ -54,6 +55,6 @@ export default function Navbar({
           </Button>
         </Link>
       </div>
-    </div>
+    </>
   );
 }
