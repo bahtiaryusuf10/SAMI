@@ -13,7 +13,7 @@ import { X, MessageCircle, ArrowUp, Send } from 'lucide-react';
 import { useRef, useEffect } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { useChat } from '@/context/ChatContext';
+import { useChat } from '@/contexts/ChatContext';
 import { throttle } from 'lodash';
 
 export default function BubbleChat() {
@@ -136,13 +136,13 @@ export default function BubbleChat() {
   };
 
   return (
-    <div className="fixed bottom-12 right-6 z-50">
+    <div className="fixed bottom-7 right-6 z-50">
       {!isOpen ? (
         <Button
           onClick={() => setIsOpen(true)}
-          className="rounded-full h-12 w-12 p-0 shadow-lg bg-blue-200 hover:bg-blue-300"
+          className="rounded-full h-12 w-12 p-0 shadow-lg bg-blue-300 hover:bg-blue-200"
         >
-          <MessageCircle className="w-10 h-10" />
+          <MessageCircle style={{ height: '22px', width: '22px' }} />
         </Button>
       ) : (
         <Card
@@ -254,7 +254,7 @@ export default function BubbleChat() {
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               />
               <Button
-                className="h-9 bg-blue-400 hover:bg-blue-200 text-white text-sm"
+                className="h-9 bg-blue-300 hover:bg-blue-200 text-white text-sm"
                 size="sm"
                 onClick={handleSend}
               >

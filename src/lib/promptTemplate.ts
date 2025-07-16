@@ -12,7 +12,7 @@ export const relevantPrompt = ChatPromptTemplate.fromMessages([
   
   Tugas Anda adalah menentukan apakah sebuah pertanyaan relevan terhadap konteks Audit Mutu Internal.
   
-  - Jika pertanyaan berkaitan dengan proses, sistem, kebijakan, maupun hasil capaian mutu lulusan (misalnya data lulusan, persentase yang sudah bekerja, capaian kompetensi), maka jawab:
+  - Jika pertanyaan berkaitan dengan proses, sistem, kebijakan, maupun hasil capaian mutu lulusan (misalnya data lulusan, persentase yang sudah bekerja, lokasi bekerja), maka jawab:
   "Ya"
   - Jika pertanyaan tidak terkait dengan Audit Mutu Internal sama sekali, jawab:
   "Pertanyaan tersebut di luar cakupan Audit Mutu Internal."`
@@ -24,7 +24,7 @@ export const insightPrompt = ChatPromptTemplate.fromMessages([
   SystemMessagePromptTemplate.fromTemplate(
     `Anda adalah analis mutu berpengalaman dalam Audit Mutu Internal (AMI) program studi di perguruan tinggi.
 
-    Tugas Anda adalah memberikan insight yang bermakna dan berdasarkan prinsip-prinsip AMI, borang akreditasi, serta praktik evaluasi kinerja program studi.
+    Tugas Anda adalah memberikan insight yang bermakna dan berdasarkan prinsip-prinsip AMI, serta praktik evaluasi kinerja program studi.
 
     Berikan jawaban yang:
     - Relevan

@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -15,24 +14,17 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import ForgotPasswordForm from './ForgotPasswordForm';
-
-const loginSchema = z.object({
-  email: z.string().email({ message: 'Email invalid' }),
-  password: z.string().min(6, { message: 'Minimal 6 character' }),
-});
-
-type LoginSchema = z.infer<typeof loginSchema>;
+import { loginSchema, LoginSchema } from '@/lib/schemas/auth';
+import { login } from '@/app/auth/actions';
 
 export function LoginForm() {
-  const supabase = createSupabaseBrowserClient();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginSchema>({
@@ -44,22 +36,23 @@ export function LoginForm() {
   });
 
   const onSubmit = async (data: LoginSchema) => {
-    setLoading(true);
+    setIsLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    });
+    try {
+      const result = await login(data);
 
-    setLoading(false);
-
-    if (error) {
-      toast.error('Login failed', {
-        description: error.message,
-      });
-    } else {
-      toast.success('Login successful');
-      router.push('/');
+      if (result?.error) {
+        toast.error('Gagal Masuk', {
+          description: result.error,
+        });
+      } else if (result?.success) {
+        toast.success(result.success);
+        router.push('/');
+      }
+    } catch (e) {
+      console.log('Login error : ', e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -86,7 +79,8 @@ export function LoginForm() {
                   />
                 </FormControl>
                 <FormDescription className="ml-2 text-xs">
-                  Use your listed email in the system.
+                  {/* Use your listed email in the system. */}
+                  Gunakan email yang sudah terdaftar di sistem.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -98,7 +92,7 @@ export function LoginForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>Kata Sandi</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
@@ -122,7 +116,7 @@ export function LoginForm() {
                   </div>
                 </FormControl>
                 <FormDescription className="ml-2 text-xs">
-                  Minimal 6 character.
+                  Minimal 6 Karakter.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -136,16 +130,21 @@ export function LoginForm() {
               }
               className="text-red-600 text-xs font-medium hover:underline cursor-pointer"
             >
-              Forgot Password?
+              Lupa Password?
             </p>
           </div>
 
           <Button
             type="submit"
             className="w-full bg-blue-400 hover:opacity-80 hover:bg-blue-400"
-            disabled={loading}
+            disabled={isLoading}
           >
-            Login
+            {isLoading ? (
+              <Loader2 className="h-6 w-6 animate-spin text-white" />
+            ) : (
+              ''
+            )}
+            Masuk
           </Button>
         </form>
       </Form>

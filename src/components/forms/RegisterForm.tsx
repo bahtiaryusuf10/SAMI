@@ -3,10 +3,9 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import {
   Form,
   FormField,
@@ -16,27 +15,12 @@ import {
   FormMessage,
   FormDescription,
 } from '@/components/ui/form';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-
-const registerSchema = z
-  .object({
-    email: z.string().email({ message: 'Email invalid' }),
-    password: z.string().min(6, { message: 'Minimal 6 character' }),
-    confirmPassword: z.string().min(6, { message: 'Minimal 6 character' }),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Password didn't match",
-    path: ['confirmPassword'],
-  });
-
-type RegisterSchema = z.infer<typeof registerSchema>;
+import { registerSchema, RegisterSchema } from '@/lib/schemas/auth';
+import { register } from '@/app/auth/actions';
 
 export function RegisterForm() {
-  const supabase = createSupabaseBrowserClient();
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -50,23 +34,23 @@ export function RegisterForm() {
   });
 
   const onSubmit = async (data: RegisterSchema) => {
-    setLoading(true);
+    setIsLoading(true);
 
-    const { error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-    });
+    try {
+      const result = await register(data);
 
-    setLoading(false);
-
-    if (error) {
-      toast.error('Register failed', {
-        description: error.message,
-      });
-    } else {
-      toast.success('Register successful, check your email to confirm');
-      form.reset();
-      router.refresh();
+      if (result?.error) {
+        toast.error('Daftar Gagal', {
+          description: result.error,
+        });
+      } else if (result?.success) {
+        toast.success(result.success);
+        form.reset();
+      }
+    } catch (e) {
+      console.log('Register error : ', e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -95,7 +79,7 @@ export function RegisterForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Kata Sandi</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Input
@@ -119,7 +103,7 @@ export function RegisterForm() {
                 </div>
               </FormControl>
               <FormDescription className="ml-2 text-xs">
-                Minimal 6 character.
+                Minimal 6 Karakter.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -131,7 +115,7 @@ export function RegisterForm() {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Confirm Password</FormLabel>
+              <FormLabel>Konfirmasi Kata Sandi</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Input
@@ -155,7 +139,7 @@ export function RegisterForm() {
                 </div>
               </FormControl>
               <FormDescription className="ml-2 text-xs">
-                Minimal 6 character.
+                Minimal 6 Karakter.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -165,9 +149,14 @@ export function RegisterForm() {
         <Button
           type="submit"
           className="w-full bg-blue-400 hover:opacity-80 hover:bg-blue-400"
-          disabled={loading}
+          disabled={isLoading}
         >
-          Register
+          {isLoading ? (
+            <Loader2 className="h-6 w-6 animate-spin text-white" />
+          ) : (
+            ''
+          )}
+          Daftar
         </Button>
       </form>
     </Form>

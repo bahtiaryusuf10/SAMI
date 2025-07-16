@@ -1,7 +1,12 @@
-export default function AuditorPage() {
-  return (
-    <div className="">
-      <h1>Pengalaman Mahasiswa Page</h1>
-    </div>
+import { getDefaultFilter } from '@/lib/utils/defaultFilter';
+import PengalamanMahasiswaClient from './_components/PengalamanMahasiswaClient';
+
+export const revalidate = 600; // Cache page for 10 minute
+
+export default async function PengalamanMahasiswaPage() {
+  const defaultFilter = await getDefaultFilter(
+    '/api/public/filters/tahun-laporan-mahasiswa'
   );
+
+  return <PengalamanMahasiswaClient filter={defaultFilter} />;
 }

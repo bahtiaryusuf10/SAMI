@@ -11,6 +11,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 
 const sidebarItems = [
   {
@@ -83,8 +84,8 @@ const sidebarItems = [
       },
       {
         iconImage: '/program-studi.png',
-        label: 'Program Studi',
-        href: '/program-studi',
+        label: 'Mata Kuliah',
+        href: '/mata-kuliah',
       },
     ],
   },
@@ -130,32 +131,39 @@ export default function Sidebar({
           <div className="flex flex-col justify-center items-center mb-4 gap-3">
             <Image src="/sami-logo.png" alt="logo" width={42} height={42} />
             {!mobileSidebarOpen && (
-              <button
+              <Button
+                variant="outline"
+                size="icon"
+                className="hover:bg-gray-100 p-1 rounded-full h-8 w-8"
                 onClick={() => setCollapsed(false)}
-                className="hover:bg-gray-100 p-1 rounded-full"
               >
-                <ChevronRight size={20} className="text-blue-400" />
-              </button>
+                <ChevronRight
+                  className="text-blue-400"
+                  style={{ height: '21px', width: '21px' }}
+                />
+              </Button>
             )}
           </div>
         ) : (
-          <div className="flex justify-between items-center p-4 border-b">
-            <div className="flex items-center gap-2">
+          <div className="flex justify-between items-center py-4 border-b ">
+            <div className="flex items-center gap-2 pl-4">
               <Image src="/sami-logo.png" alt="logo" width={45} height={45} />
               <span className="text-3xl font-extrabold text-blue-400 whitespace-nowrap">
                 SAMI
               </span>
             </div>
             {!mobileSidebarOpen && (
-              <button
+              <Button
+                variant="outline"
+                size="icon"
+                className="group p-0 hover:bg-gray-100 rounded-bl-[10px] rounded-tl-[10px] rounded-br-[0px] rounded-tr-[0px] h-9 w-7"
                 onClick={() => setCollapsed(true)}
-                className="hover:bg-gray-100 p-1 rounded-full"
               >
                 <ChevronLeft
-                  size={20}
-                  className="text-black hover:text-blue-400"
+                  className="text-gray-400 group-hover:text-blue-400"
+                  style={{ height: '21px', width: '21px' }}
                 />
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -181,8 +189,8 @@ export default function Sidebar({
                     } ${
                       isActive
                         ? collapsed
-                          ? 'bg-blue-100'
-                          : 'bg-blue-100 text-blue-400 font-semibold'
+                          ? 'bg-gray-100'
+                          : 'bg-gray-100 text-blue-400 font-semibold'
                         : 'hover:bg-gray-100 text-gray-500 font-light'
                     }`}
                   >
@@ -210,12 +218,15 @@ export default function Sidebar({
                       </TooltipContent>
                     </Tooltip>
                     {!collapsed && <span>{item.label}</span>}
+                    {isActive && !collapsed && (
+                      <div className="ml-auto rounded-sm h-5 w-1 bg-blue-400"></div>
+                    )}
                   </Link>
                 );
               })}
 
               {collapsed && index < sidebarItems.length - 1 && (
-                <div className="my-2">
+                <div className="my-2 mb-3">
                   <Separator className="w-10 mx-auto bg-gray-300" />
                 </div>
               )}

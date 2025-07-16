@@ -2,6 +2,7 @@
 
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
+import Footer from '@/components/Footer';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { useState } from 'react';
@@ -37,9 +38,7 @@ export default function DashboardLayout({
             {children}
           </main>
           <footer className="bg-blue-400 h-10 flex items-center shadow-[0_-2px_5px_rgba(0,0,0,0.15)]">
-            <p className="text-white text-xs ml-4">
-              &copy; 2025 SAMI. All Rights Reserved.
-            </p>
+            <Footer />
           </footer>
         </div>
       </div>
