@@ -4,8 +4,8 @@ import { insightPrompt, sqlAnswerPrompt, sqlPrompt } from './promptTemplate';
 import { RunnableLambda, RunnableSequence } from '@langchain/core/runnables';
 import { AIMessage } from '@langchain/core/messages';
 import { sqlSchemas } from './sqlSchemas';
-import { withErrorHandling } from '@/utils/errorHandling';
-import { formatToMarkdownTable } from '@/utils/formatToMarkdown';
+import { withErrorHandling } from '@/lib/utils/errorHandling';
+import { formatToMarkdownTable } from '@/lib/utils/formatToMarkdown';
 
 const SUPABASE_FUNCTION_URL =
   'https://hvpvmczjpfwysvzbwhhn.supabase.co/functions/v1/quick-endpoint';

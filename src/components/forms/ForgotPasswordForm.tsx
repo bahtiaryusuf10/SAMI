@@ -1,6 +1,5 @@
 'use client';
 
-import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
@@ -23,17 +22,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
-
-const forgotPasswordSchema = z.object({
-  email: z.string().email({ message: 'Email invalid' }),
-});
-
-type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;
+import { forgotPasswordSchema, ForgotPasswordSchema } from '@/lib/schemas/auth';
+import { sendResetLink } from '@/app/auth/actions';
+import { Loader2 } from 'lucide-react';
 
 export default function ForgotPasswordForm() {
-  const supabase = createSupabaseBrowserClient();
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const form = useForm<ForgotPasswordSchema>({
@@ -44,27 +38,25 @@ export default function ForgotPasswordForm() {
   });
 
   const onSubmit = async (data: ForgotPasswordSchema) => {
-    setLoading(true);
+    setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+      const result = await sendResetLink(data);
 
-      if (error) {
-        toast.error(error.message || 'Something went wrong');
-      } else {
-        toast.success(
-          "If this email exists, you'll receive an email with instructions."
-        );
+      if (result?.error) {
+        toast.error('Gagal Mengirim Tautan', {
+          description: result.error,
+        });
+      } else if (result?.success) {
+        toast.success(result.success);
+        form.reset();
       }
-    } catch (err) {
-      toast.error('Unexpected error occurred. Please try again.');
-      console.log(err);
+    } catch (e) {
+      console.log('Forgot password error : ', e);
+    } finally {
+      setIsLoading(false);
+      setIsDialogOpen(false);
     }
-
-    setLoading(false);
-    setIsDialogOpen(false);
   };
 
   return (
@@ -81,10 +73,10 @@ export default function ForgotPasswordForm() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="space-y-2 bg-white p-6 rounded-xl shadow-md w-[90vw] max-w-md mx-auto">
           <DialogHeader>
-            <DialogTitle>Recover Your Account</DialogTitle>
+            <DialogTitle>Pulihkan Akun Anda</DialogTitle>
             <DialogDescription>
-              Enter your email to receive instructions on recovering your
-              account.
+              Masukkan email Anda untuk menerima instruksi mengenai cara
+              memulihkan akun.
             </DialogDescription>
           </DialogHeader>
 
@@ -95,7 +87,7 @@ export default function ForgotPasswordForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email Address</FormLabel>
+                    <FormLabel>Alamat Email</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
@@ -104,7 +96,7 @@ export default function ForgotPasswordForm() {
                       />
                     </FormControl>
                     <FormDescription className="ml-2 text-xs">
-                      Use your valid email.
+                      Gunakan email yang valid.
                     </FormDescription>
                   </FormItem>
                 )}
@@ -114,9 +106,14 @@ export default function ForgotPasswordForm() {
                 <Button
                   type="submit"
                   className="mt-4 w-full bg-blue-400 hover:opacity-80 hover:bg-blue-400"
-                  disabled={loading}
+                  disabled={isLoading}
                 >
-                  {loading ? 'Sending...' : 'Send Instructions'}
+                  {isLoading ? (
+                    <Loader2 className="h-6 w-6 animate-spin text-white" />
+                  ) : (
+                    ''
+                  )}
+                  {isLoading ? 'Mengirim...' : 'Kirim Instruksi'}
                 </Button>
               </DialogFooter>
             </form>

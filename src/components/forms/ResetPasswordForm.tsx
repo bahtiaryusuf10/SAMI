@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import {
   Form,
   FormControl,
@@ -15,140 +14,211 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ResetPasswordSchema, resetPasswordSchema } from '@/lib/schemas/auth';
+import { exchangeCodeForSession, resetPassword } from '@/app/auth/actions';
+import { CloudAlert, Loader2, CircleAlert } from 'lucide-react';
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogHeader,
+} from '@/components/ui/dialog';
 
-const formSchema = z
-  .object({
-    password: z.string().min(6, { message: 'Minimal 6 character' }),
-    confirmPassword: z.string().min(6, { message: 'Minimal 6 character' }),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Password didn't match",
-    path: ['confirmPassword'],
-  });
-
-export default function ResetPasswordForm() {
-  const supabase = createSupabaseBrowserClient();
+export default function ResetPasswordForm({
+  authCode,
+}: {
+  authCode?: string | null;
+}) {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const [showAllPassword, setShowAllPassword] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState<
+    'verifying' | 'error' | 'ready'
+  >('verifying');
+  const [errorMessage, setErrorMessage] = useState<React.ReactNode>(null);
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: { password: '', confirmPassword: '' },
+  const verificationRan = useRef(false);
+
+  const form = useForm<ResetPasswordSchema>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: { newPassword: '', confirmPassword: '' },
   });
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const authCode =
-      urlParams.get('auth_code') ||
-      new URL(window.location.href).hash.split('=')[1];
+    if (verificationRan.current) return;
 
-    if (authCode) {
-      supabase.auth.exchangeCodeForSession(authCode).then(({ data, error }) => {
-        if (error) {
-          toast.error('Session exchange failed', {
-            description: error.message,
-          });
-        } else {
-          console.log('Session exchanged:', data);
-        }
-      });
-    } else {
-      toast.error('Auth code missing in URL');
+    if (!authCode) {
+      setVerificationStatus('error');
+      setErrorMessage(
+        <>
+          Maaf atas ketidaknyamanannya, tautan untuk mengubah kata sandi tidak
+          valid atau telah kedaluwarsa.
+          <br />
+          Anda bisa mencoba membuat kembali tautan ubah kata sandi yang baru.
+        </>
+      );
+      verificationRan.current = true;
+      return;
     }
-  }, [supabase.auth]);
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    const { error } = await supabase.auth.updateUser({
-      password: data.password,
-    });
+    const verifyCode = async () => {
+      verificationRan.current = true;
 
-    if (error) {
-      toast.error('Reset password failed', {
-        description: error.message,
-      });
-    } else {
-      toast.success('Password changed. Redirect to login page...');
-      setTimeout(() => {
-        router.push('/auth');
-      }, 2000);
+      const result = await exchangeCodeForSession(authCode);
+      if (result.error) {
+        setVerificationStatus('error');
+        setErrorMessage(result.error.message);
+        setTimeout(() => router.push('/auth'), 3000);
+      } else {
+        setVerificationStatus('ready');
+        router.replace('/reset-password', { scroll: false });
+      }
+    };
+
+    verifyCode();
+  }, [authCode, router]);
+
+  const onSubmit = async (data: ResetPasswordSchema) => {
+    setIsLoading(true);
+
+    try {
+      const result = await resetPassword(data);
+
+      if (result?.error) {
+        toast.error('Gagal mengubah kata sandi', {
+          description: result.error,
+        });
+      } else if (result?.success) {
+        toast.success(result.success);
+        setTimeout(() => {
+          router.push('/auth');
+        }, 2000);
+      }
+    } catch (e) {
+      console.log('Reset password error : ', e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  if (verificationStatus === 'verifying') {
+    return (
+      <div className="flex items-center justify-center p-8 text-blue-500">
+        <Loader2 className="h-6 w-6 animate-spin" />
+        <p className="ml-2">Memverifikasi tautan...</p>
+      </div>
+    );
+  }
+
+  if (verificationStatus === 'error') {
+    return (
+      <div className="flex flex-col items-center justify-center space-y-20 text-red-400 bg-blue-200">
+        <h1 className="text-5xl font-bold">Peringatan!</h1>
+        <CloudAlert className="h-50 w-50" />
+        <p className="text-center">{errorMessage}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full max-w-md mx-auto mt-12 bg-white rounded-xl shadow p-6">
-      <h2 className="text-2xl font-bold text-center mb-8">Reset Password</h2>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>New Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type={showAllPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription className="ml-2 text-xs">
-                  Minimal 6 character.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>New Confirm Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type={showAllPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription className="ml-2 text-xs">
-                  Minimal 6 character.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="flex items-center space-x-2 pt-1 pb-3">
-            <Checkbox
-              id="show-password"
-              checked={showAllPassword}
-              onCheckedChange={(checked) =>
-                setShowAllPassword(Boolean(checked))
-              }
-              className="w-4 h-4 data-[state=checked]:bg-blue-400 data-[state=checked]:border-blue-400"
+    <>
+      <div className="w-full max-w-md mx-auto mt-12 bg-white rounded-xl shadow p-6">
+        <h2 className="text-2xl font-bold text-center mb-8">Ubah Kata Sandi</h2>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            <FormField
+              control={form.control}
+              name="newPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Kata Sandi Baru</FormLabel>
+                  <FormControl>
+                    <Input
+                      type={showAllPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription className="ml-2 text-xs">
+                    Minimal 6 karakter.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <label
-              htmlFor="show-password"
-              className="text-xs text-muted-foreground"
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Konfirmasi Kata Sandi Baru</FormLabel>
+                  <FormControl>
+                    <Input
+                      type={showAllPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription className="ml-2 text-xs">
+                    Minimal 6 karakter.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex items-center space-x-2 pt-1 pb-3">
+              <Checkbox
+                id="show-password"
+                checked={showAllPassword}
+                onCheckedChange={(checked) =>
+                  setShowAllPassword(Boolean(checked))
+                }
+                className="w-4 h-4 data-[state=checked]:bg-blue-400 data-[state=checked]:border-blue-400"
+              />
+              <label
+                htmlFor="show-password"
+                className="text-xs text-muted-foreground"
+              >
+                Lihat Kata Sandi
+              </label>
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-blue-400 hover:opacity-80 hover:bg-blue-400"
+              disabled={isLoading}
             >
-              Show Password
-            </label>
-          </div>
+              {isLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin text-white" />
+              ) : (
+                ''
+              )}
+              Ubah
+            </Button>
+          </form>
+        </Form>
+      </div>
 
-          <Button
-            type="submit"
-            className="w-full bg-blue-400 hover:opacity-80 hover:bg-blue-400"
-          >
-            Reset
-          </Button>
-        </form>
-      </Form>
-    </div>
+      <div className="absolute bottom-5 right-10">
+        <Dialog>
+          <DialogTrigger>
+            <CircleAlert className="w-6 h-6 text-white cursor-pointer" />
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Halaman Sekali Pakai</DialogTitle>
+              <DialogDescription>
+                Harap tidak me-refresh halaman ini, karena tautan ubah kata
+                sandi hanya valid untuk satu kali penggunaan.
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </>
   );
 }

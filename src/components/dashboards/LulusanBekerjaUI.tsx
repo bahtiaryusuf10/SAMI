@@ -1,0 +1,622 @@
+'use client';
+
+import { useMemo, useState, useCallback, JSX, useEffect } from 'react';
+import { MyBarChart } from '@/components/charts/MyBarChart';
+import { MyPieChart } from '@/components/charts/MyPieChart';
+import { MySingleValueChart } from '@/components/charts/MySingleValueChart';
+import { DashboardGridLayout } from '@/components/DashboardGridLayout';
+import BubbleChat from '@/components/forms/BubbleChat';
+import ImportDialog from '@/components/ImportDialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogHeader,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import {
+  // LineChart,
+  // Briefcase,
+  GraduationCap,
+  Loader2,
+  FileSpreadsheet,
+  AlertTriangle,
+  Wallet,
+  Hourglass,
+  ArrowUpDown,
+} from 'lucide-react';
+import { DashboardSettings } from '@/components/settings/DashboardSettings';
+import { ShareButton } from '@/components/ShareButton';
+import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
+import { DashboardProvider } from '@/contexts/DashboardContext';
+import { exportAsXlsx } from '@/lib/utils/handleExportFile';
+import { QuickFilter } from '@/components/settings/QuickFilter';
+import { ColumnDef } from '@tanstack/react-table';
+import { MyDataTableMaster } from '../tables/MyDataTableMaster';
+
+interface DataState<T> {
+  data: T | null;
+  isLoading: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  error: any;
+}
+
+interface ChartDataPie {
+  id: string;
+  label: string;
+  value: number;
+}
+
+interface ChartDataBar {
+  label: string;
+  value: number;
+}
+
+interface DataTable {
+  label: string;
+  value: number;
+}
+
+interface InfoAgregatLulusan {
+  jumlah_mahasiswa: number;
+  rata_rata_rasio_penghasilan_terhadap_ump: number;
+  rata_rata_waktu_tunggu: number;
+}
+
+interface DashboardData {
+  infoAgregatLulusan: DataState<InfoAgregatLulusan>;
+  // persentaseStatusLulusan: DataState<PersentaseStatusLulusan>;
+  lokasiBekerja: DataState<ChartDataBar>;
+  statusLulusan: DataState<ChartDataPie>;
+  waktuTungguBekerja: DataState<ChartDataPie>;
+  rentangPenghasilan: DataState<ChartDataPie>;
+}
+
+interface LulusanBekerjaUIProps {
+  pageKey: string;
+  dashboardData: DashboardData;
+  isPublicView?: boolean;
+  initialActiveYear?: number | null;
+}
+
+interface DashboardConfigItem {
+  id: string;
+  title: string;
+  type: 'small' | 'medium' | 'large';
+  isPercentage?: boolean;
+  isDrillDown?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  chartProps?: Record<string, any>;
+}
+
+const dashboardConfig: DashboardConfigItem[] = [
+  {
+    id: 'lokasi-bekerja',
+    title: 'Lokasi Bekerja',
+    type: 'large',
+    isDrillDown: true,
+    component: MyBarChart,
+    chartProps: {
+      dataKeys: ['value'],
+      indexBy: 'label',
+      axisBottomLegend: 'Lokasi',
+      axisLeftLegend: 'Jumlah Lulusan',
+    },
+  },
+  {
+    id: 'status-lulusan',
+    title: 'Status Lulusan',
+    type: 'small',
+    isPercentage: true,
+    component: MyPieChart,
+  },
+  {
+    id: 'rentang-penghasilan',
+    title: 'Rentang Penghasilan',
+    type: 'medium',
+    isDrillDown: true,
+    component: MyPieChart,
+  },
+  {
+    id: 'waktu-tunggu-bekerja',
+    title: 'Waktu Tunggu Bekerja',
+    type: 'medium',
+    component: MyPieChart,
+  },
+] as const;
+
+type DashboardId = (typeof dashboardConfig)[number]['id'];
+
+const workplaceColumns: ColumnDef<DataTable>[] = [
+  {
+    accessorKey: 'label',
+    header: ({ column }) => {
+      return (
+        <div className="text-left w-[400px]">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Nama Perusahaan
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => (
+      <div className="text-left w-[400px] truncate">
+        {row.getValue('label')}
+      </div>
+    ),
+    meta: {
+      displayName: 'Nama Perusahaan',
+    },
+  },
+  {
+    accessorKey: 'value',
+    header: ({ column }) => {
+      return (
+        <div className="text-center">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Jumlah Lulusan
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue('value')}</div>
+    ),
+    meta: {
+      displayName: 'Jumlah Lulusan',
+    },
+  },
+];
+
+export function LulusanBekerjaUI({
+  pageKey,
+  dashboardData,
+  isPublicView = false,
+  initialActiveYear = null,
+}: LulusanBekerjaUIProps): JSX.Element {
+  // Filter
+  const zustandActiveYear =
+    useDashboardSettingsStore(
+      (state) => state.pageSettings[pageKey]?.activeReportingYear
+    ) ?? null;
+
+  const setActiveYear = useDashboardSettingsStore(
+    (state) => state.setActiveReportingYear
+  );
+
+  const activeReportingYear = isPublicView
+    ? initialActiveYear
+    : zustandActiveYear;
+
+  const handleValueChange = (newYear: string) => {
+    setActiveYear(pageKey, newYear === 'all' ? null : parseInt(newYear));
+  };
+
+  const {
+    infoAgregatLulusan,
+    lokasiBekerja,
+    statusLulusan,
+    waktuTungguBekerja,
+    rentangPenghasilan,
+    // persentaseStatusLulusan,
+  } = dashboardData;
+
+  // Drilldown lokasi bekerja
+  const [selectedLokasiBekerja, setSelectedLokasiBekerja] = useState<
+    string | null
+  >(null);
+  const [dataTempatBekerja, setDataTempatBekerja] = useState<
+    ChartDataBar[] | null
+  >(null);
+  const [isDrilldownTempatBekerjaLoading, setIsDrilldownTempatBekerjaLoading] =
+    useState(false);
+
+  // Drilldown penghasilan
+  const [activePenghasilanData, setActivePenghasilanData] = useState(
+    rentangPenghasilan.data || []
+  );
+  const [penghasilanBreadcrumbs, setPenghasilanBreadcrumbs] = useState([
+    { label: 'Rentang Penghasilan', level: 0 },
+  ]);
+  const [isPenghasilanLoading, setIsPenghasilanLoading] = useState(false);
+
+  // Dashboard Settings
+  const pageSettings = useDashboardSettingsStore(
+    (state) => state.pageSettings[pageKey]
+  );
+
+  const { theme, showLabels } = pageSettings || {
+    theme: 'pastel1',
+    showLabels: true,
+  };
+
+  const setPageTheme = useDashboardSettingsStore((state) => state.setPageTheme);
+  const setPageShowLabels = useDashboardSettingsStore(
+    (state) => state.setPageShowLabels
+  );
+
+  // Drilldown Data Handling for Location
+  const handleDrilldownLokasi = useCallback(
+    async (barData: { indexValue: string }) => {
+      const lokasiBekerja = barData.indexValue;
+
+      console.log(`Drill down untuk lokasi bekerja : ${lokasiBekerja}`);
+
+      setSelectedLokasiBekerja(lokasiBekerja);
+      setIsDrilldownTempatBekerjaLoading(true);
+      setDataTempatBekerja(null);
+
+      try {
+        const baseUrl = `/api/public/lulusan-bekerja/drilldown-lokasi-bekerja?province=${encodeURIComponent(
+          lokasiBekerja
+        )}`;
+
+        const finalUrl = activeReportingYear
+          ? `${baseUrl}&year=${activeReportingYear}`
+          : baseUrl;
+
+        const response = await fetch(finalUrl);
+
+        if (!response.ok)
+          throw new Error(
+            `Gagal fetch data tempat kerja untuk ${lokasiBekerja}`
+          );
+
+        const result = await response.json();
+        setDataTempatBekerja(result.data);
+      } catch (error) {
+        console.error(error);
+        setDataTempatBekerja([]);
+      } finally {
+        setIsDrilldownTempatBekerjaLoading(false);
+      }
+    },
+    [activeReportingYear]
+  );
+
+  // Drilldown Data Handling for Income
+  useEffect(() => {
+    if (penghasilanBreadcrumbs.length === 1) {
+      setActivePenghasilanData(rentangPenghasilan.data || []);
+    }
+  }, [rentangPenghasilan.data, penghasilanBreadcrumbs]);
+
+  const handleDrilldownPenghasilan = useCallback(
+    async (pieData: { id: string; label: string }) => {
+      if (penghasilanBreadcrumbs.length > 1) return;
+
+      const kategoriPenghasilan = pieData.label;
+      setIsPenghasilanLoading(true);
+
+      try {
+        const baseUrl = `/api/public/lulusan-bekerja/drilldown-penghasilan?category=${encodeURIComponent(
+          kategoriPenghasilan
+        )}`;
+        const finalUrl = activeReportingYear
+          ? `${baseUrl}&year=${activeReportingYear}`
+          : baseUrl;
+        const response = await fetch(finalUrl);
+
+        if (!response.ok) throw new Error('Gagal fetch data detail');
+
+        const result = await response.json();
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const formattedData = result.data.map((item: any) => {
+          const formattedLabel = new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+          }).format(Number(item.label));
+
+          return {
+            ...item,
+            id: formattedLabel,
+            label: formattedLabel,
+          };
+        });
+
+        setActivePenghasilanData(formattedData);
+        setPenghasilanBreadcrumbs((prev) => [
+          ...prev,
+          { label: kategoriPenghasilan, level: 1 },
+        ]);
+      } catch (error) {
+        console.error(error);
+        setActivePenghasilanData([]);
+      } finally {
+        setIsPenghasilanLoading(false);
+      }
+    },
+    [activeReportingYear, penghasilanBreadcrumbs]
+  );
+
+  const handlePenghasilanBreadcrumbClick = useCallback(
+    (level: number) => {
+      if (level === 0) {
+        setActivePenghasilanData(rentangPenghasilan.data || []);
+        setPenghasilanBreadcrumbs((prev) => prev.slice(0, 1));
+      }
+    },
+    [rentangPenghasilan.data]
+  );
+
+  // Export drilldown
+  const handleExportDrilldownData = () => {
+    if (
+      dataTempatBekerja &&
+      dataTempatBekerja.length > 0 &&
+      selectedLokasiBekerja
+    ) {
+      const fileName = `Tempat Kerja Lulusan di ${selectedLokasiBekerja}`;
+      exportAsXlsx(dataTempatBekerja, fileName);
+    }
+  };
+
+  // Chart Component
+  const chartChildren = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dataStateMap: Record<DashboardId, DataState<any>> = {
+      'lokasi-bekerja': lokasiBekerja,
+      'status-lulusan': statusLulusan,
+      'rentang-penghasilan': rentangPenghasilan,
+      'waktu-tunggu-bekerja': waktuTungguBekerja,
+    };
+
+    if (penghasilanBreadcrumbs.length > 1) {
+      dataStateMap['rentang-penghasilan'] = {
+        data: activePenghasilanData,
+        isLoading: isPenghasilanLoading,
+        error: null,
+      };
+    }
+
+    const dynamicDescription = activeReportingYear
+      ? `Data untuk lulusan tahun ${activeReportingYear}`
+      : 'Data untuk semua tahun kelulusan';
+
+    return dashboardConfig.map((config) => {
+      const ChartComponent = config.component;
+      const chartState = dataStateMap[config.id];
+      const chartProps = { ...(config.chartProps ?? {}) };
+
+      if (config.id === 'lokasi-bekerja') {
+        chartProps.onClick = handleDrilldownLokasi;
+      }
+
+      if (config.id === 'rentang-penghasilan') {
+        chartProps.onClick = handleDrilldownPenghasilan;
+        chartProps.breadcrumbs = penghasilanBreadcrumbs;
+        chartProps.onBreadcrumbClick = handlePenghasilanBreadcrumbClick;
+      }
+
+      if (!chartState) return null;
+
+      return (
+        <ChartComponent
+          key={config.id}
+          title={config.title}
+          type={config.type as 'small' | 'medium' | 'large'}
+          isPercentage={config.isPercentage}
+          drillDown={config.isDrillDown}
+          description={dynamicDescription}
+          data={chartState.data || []}
+          isLoading={chartState.isLoading}
+          error={chartState.error}
+          pageKey={pageKey}
+          chartId={config.id}
+          colorScheme={theme}
+          enableLabel={showLabels}
+          enableArcLabels={showLabels}
+          {...chartProps}
+        />
+      );
+    });
+  }, [
+    lokasiBekerja,
+    statusLulusan,
+    rentangPenghasilan,
+    waktuTungguBekerja,
+    penghasilanBreadcrumbs,
+    activeReportingYear,
+    activePenghasilanData,
+    isPenghasilanLoading,
+    pageKey,
+    theme,
+    showLabels,
+    handleDrilldownLokasi,
+    handleDrilldownPenghasilan,
+    handlePenghasilanBreadcrumbClick,
+  ]);
+
+  return (
+    <DashboardProvider isPublicView={isPublicView}>
+      <>
+        <div className="space-y-4">
+          <div className="flex w-full items-center justify-between px-2 pt-2 mb-8">
+            <div className="flex flex-col">
+              <h1 className="text-4xl font-semibold text-white">
+                Lulusan Bekerja
+              </h1>
+              <div className="flex items-center mt-2 gap-1">
+                <p className=" text-white text-sm">
+                  IKU 1 Lulusan mendapatkan pekerjaan yang layak.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {isPublicView ? (
+                <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
+                  <span className="font-normal">Data : </span>
+                  <span className="font-bold">
+                    {initialActiveYear
+                      ? `Tahun Lulus ${initialActiveYear}`
+                      : 'Semua Tahun'}
+                  </span>
+                </div>
+              ) : (
+                <QuickFilter
+                  label="Tahun Lulus"
+                  apiUrl="/api/public/filters/tahun-lulus"
+                  activeValue={activeReportingYear}
+                  onValueChange={handleValueChange}
+                />
+              )}
+              <DashboardSettings
+                pageKey={pageKey}
+                theme={theme}
+                showLabels={showLabels}
+                setPageTheme={setPageTheme}
+                setPageShowLabels={setPageShowLabels}
+              />
+              {!isPublicView && (
+                <ShareButton
+                  dashboardId={pageKey}
+                  activeFilterValue={activeReportingYear}
+                  filterQueryParamName="year"
+                />
+              )}
+            </div>
+          </div>
+          <div className="px-2 py-0 flex flex-col gap-4 mb-8">
+            <div className="w-full">
+              <div className="flex flex-wrap gap-4">
+                {infoAgregatLulusan.isLoading ? (
+                  <div className="flex justify-center items-center w-full h-[50px] rounded-xl bg-white">
+                    <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
+                    <span className="ml-2 text-black text-md">
+                      Memuat data...
+                    </span>
+                  </div>
+                ) : infoAgregatLulusan.error ? (
+                  <div className="flex justify-center items-center w-full h-[50px] rounded-xl bg-white">
+                    <AlertTriangle className="h-5 w-5 text-red-400" />
+                    <p className="ml-2 text-red-400 text-md">
+                      Gagal memuat data.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {/*INFO STATISTIK LULUSAN*/}
+                    <MySingleValueChart
+                      icon={
+                        <GraduationCap className="h-10 w-10 text-blue-400" />
+                      }
+                      label="Lulusan"
+                      value={infoAgregatLulusan.data?.jumlah_mahasiswa ?? 0}
+                      targetLabel=""
+                    />
+                    <MySingleValueChart
+                      icon={<Wallet className="h-10 w-10 text-blue-400" />}
+                      label="Rasio Penghasilan"
+                      value={parseFloat(
+                        (
+                          infoAgregatLulusan.data
+                            ?.rata_rata_rasio_penghasilan_terhadap_ump ?? 0
+                        ).toFixed(1)
+                      )}
+                      targetLabel="/ 1.2 x UMP"
+                      targetValue={1.2}
+                    />
+                    <MySingleValueChart
+                      icon={<Hourglass className="h-10 w-10 text-blue-400" />}
+                      label="Waktu Tunggu"
+                      value={parseFloat(
+                        (
+                          infoAgregatLulusan.data?.rata_rata_waktu_tunggu ?? 0
+                        ).toFixed(1)
+                      )}
+                      targetLabel="/ 3 bulan"
+                      targetValue={3}
+                      direction="lower-is-better"
+                    />
+                  </>
+                )}
+              </div>
+              <div className="-mx-4">
+                <DashboardGridLayout pageKey={pageKey}>
+                  {chartChildren}
+                </DashboardGridLayout>
+              </div>
+              <Dialog
+                open={dataTempatBekerja !== null}
+                onOpenChange={(isOpen) => {
+                  if (!isOpen) {
+                    setDataTempatBekerja(null);
+                    setSelectedLokasiBekerja(null);
+                  }
+                }}
+              >
+                <DialogContent
+                  className="sm:max-w-4xl bg-white border-gray-700 gap-1"
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                >
+                  <DialogHeader>
+                    <div className="flex items-center justify-between pr-8">
+                      <div className="flex flex-col gap-2">
+                        <DialogTitle className="text-black">
+                          Tempat Bekerja di {selectedLokasiBekerja}
+                        </DialogTitle>
+                        <DialogDescription className="text-gray-400">
+                          Berikut adalah daftar tempat kerja untuk provinsi yang
+                          dipilih.
+                        </DialogDescription>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        className="justify-between font-normal bg-gray-100 text-gray-400 hover:text-blue-400  rounded-full "
+                        onClick={handleExportDrilldownData}
+                      >
+                        Export to XLSX
+                        <FileSpreadsheet className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </DialogHeader>
+
+                  <div className="pb-4 overflow-x-auto">
+                    {isDrilldownTempatBekerjaLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                        <span className="ml-2 text-white text-md">
+                          Loading...
+                        </span>
+                      </>
+                    ) : (
+                      dataTempatBekerja && (
+                        <MyDataTableMaster
+                          columns={workplaceColumns}
+                          data={dataTempatBekerja || []}
+                          searchPlaceholder="Cari berdasarkan Nama Perusahaan [ / ]"
+                          isLoading={isDrilldownTempatBekerjaLoading}
+                          initialPageSize={8}
+                        />
+                      )
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
+              {!isPublicView && (
+                <div className="flex flex-wrap gap-4">
+                  <ImportDialog type="graduates" />
+                  <ImportDialog type="tracer_studies" />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        {!isPublicView && <BubbleChat />}
+      </>
+    </DashboardProvider>
+  );
+}
