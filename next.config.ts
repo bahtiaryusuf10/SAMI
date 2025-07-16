@@ -10,20 +10,8 @@ const nextConfig: NextConfig = {
       },
     },
   },
-  // compiler: {
-  //   removeConsole: true,
-  // },
-  webpack: (config, {}) => {
-    config.externals.push({
-      '@supabase/realtime-js': 'commonjs @supabase/realtime-js',
-    });
-
-    config.module.rules.push({
-      test: /realtime-js/,
-      loader: 'ignore-loader',
-    });
-
-    return config;
+  compiler: {
+    removeConsole: true,
   },
 };
 
