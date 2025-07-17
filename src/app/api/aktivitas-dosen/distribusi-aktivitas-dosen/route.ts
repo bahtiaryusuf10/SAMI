@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     );
 
     if (error) {
-      throw new Error(`Error fetching lecturer activity distribution data: ${error.message}`);
+      throw new Error(`Error fetching lecturer teaching activity distribution data: ${error.message}`);
     }
 
     return NextResponse.json({

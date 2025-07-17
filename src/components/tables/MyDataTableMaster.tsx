@@ -4,6 +4,7 @@
 import * as React from 'react';
 import {
   ColumnDef,
+  ColumnSizingState,
   SortingState,
   flexRender,
   getCoreRowModel,
@@ -51,6 +52,7 @@ export function MyDataTableMaster<TData>({
   const [globalFilter, setGlobalFilter] = React.useState('');
 
   const searchInputRef = React.useRef<HTMLInputElement>(null);
+  const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
 
   const table = useReactTable({
     data,
@@ -61,9 +63,12 @@ export function MyDataTableMaster<TData>({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    columnResizeMode: 'onChange',
+    onColumnSizingChange: setColumnSizing,
     state: {
       sorting,
       globalFilter,
+      columnSizing,
     },
     initialState: {
       pagination: {
@@ -138,13 +143,26 @@ export function MyDataTableMaster<TData>({
                 <TableRow key={headerGroup.id} className="border-gray-700">
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableHead key={header.id} className="text-black">
+                      <TableHead
+                        key={header.id}
+                        className="text-black relative"
+                        style={{ width: header.getSize() }}
+                      >
                         {header.isPlaceholder
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
                               header.getContext()
                             )}
+                        <div
+                          {...{
+                            onMouseDown: header.getResizeHandler(),
+                            onTouchStart: header.getResizeHandler(),
+                          }}
+                          className={`absolute top-0 right-0 h-full w-1 cursor-col-resize select-none touch-none bg-gray-300 transition-colors ${
+                            header.column.getIsResizing() ? 'bg-blue-500' : ''
+                          }`}
+                        />
                       </TableHead>
                     );
                   })}
@@ -181,7 +199,7 @@ export function MyDataTableMaster<TData>({
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="h-24 text-center text-gray-400"
+                    className="h-24 text-center text-gray-400 whitespace-normal break-words"
                   >
                     Tidak ada data.
                   </TableCell>

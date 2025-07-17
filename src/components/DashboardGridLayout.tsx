@@ -19,6 +19,7 @@ const sizeConfigs = {
   medium: { w: 6, h: 4, minW: 4, minH: 3 },
   semiLarge: { w: 7, h: 4, minW: 6, minH: 3 },
   large: { w: 8, h: 4, minW: 6, minH: 3 },
+  full: { w: 12, h: 4, minW: 8, minH: 3 },
 };
 const DEFAULT_TYPE = 'medium';
 

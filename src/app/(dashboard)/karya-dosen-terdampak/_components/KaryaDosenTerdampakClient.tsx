@@ -44,11 +44,65 @@ export default function KaryaDosenTerdampakClient({
     dedupingInterval: 10000,
   });
 
+  const apiUrlDistribusiTingkatPublikasi = `/api/karya-dosen-terdampak/distribusi-tingkat-publikasi?year=${
+    activeReportingYear || ''
+  }`;
+  const {
+    data: resultDistribusiTingkatPublikasi,
+    error: errorDistribusiTingkatPublikasi,
+    isLoading: isLoadingDistribusiTingkatPublikasi,
+  } = useSWR(apiUrlDistribusiTingkatPublikasi, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 10000,
+  });
+
+  const apiUrlTrenPublikasiPerTahun = `/api/karya-dosen-terdampak/tren-publikasi-per-tahun?year=${
+    activeReportingYear || ''
+  }`;
+  const {
+    data: resultTrenPublikasiPerTahun,
+    error: errorTrenPublikasiPerTahun,
+    isLoading: isLoadingTrenPublikasiPerTahun,
+  } = useSWR(apiUrlTrenPublikasiPerTahun, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 10000,
+  });
+
+  const apiUrlTrenSitasiPerDosen = `/api/karya-dosen-terdampak/tren-sitasi-per-dosen?year=${
+    activeReportingYear || ''
+  }`;
+  const {
+    data: resultTrenSitasiPerDosen,
+    error: errorTrenSitasiPerDosen,
+    isLoading: isLoadingTrenSitasiPerDosen,
+  } = useSWR(apiUrlTrenSitasiPerDosen, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 10000,
+  });
+
   const dashboardData = {
     infoAgregatKaryaDosen: {
       data: resultInfoAgregatKaryaDosen?.data,
       isLoading: isLoadingInfoAgregatKaryaDosen,
       error: errorInfoAgregatKaryaDosen,
+    },
+    distribusiTingkatPublikasi: {
+      data: resultDistribusiTingkatPublikasi?.data,
+      isLoading: isLoadingDistribusiTingkatPublikasi,
+      error: errorDistribusiTingkatPublikasi,
+    },
+    trenPublikasiPerTahun: {
+      data: resultTrenPublikasiPerTahun?.data,
+      isLoading: isLoadingTrenPublikasiPerTahun,
+      error: errorTrenPublikasiPerTahun,
+    },
+    trenSitasiPerDosen: {
+      data: resultTrenSitasiPerDosen?.data,
+      isLoading: isLoadingTrenSitasiPerDosen,
+      error: errorTrenSitasiPerDosen,
     },
   };
 

@@ -15,6 +15,7 @@ export interface ChartSpecificSettings {
   innerRadius?: number;
   arcLink?: number;
   sortByValue?: boolean;
+  enableArea?: boolean;
 }
 
 interface DashboardState {

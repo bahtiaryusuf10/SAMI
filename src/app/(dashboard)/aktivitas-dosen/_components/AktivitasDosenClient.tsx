@@ -44,6 +44,19 @@ export default function AktivitasDosenClient({
     dedupingInterval: 10000,
   });
 
+  const apiUrlDistribusiPersentaseAktivitasDosen = `/api/aktivitas-dosen/distribusi-persentase-aktivitas-dosen?year=${
+    activeReportingYear || ''
+  }`;
+  const {
+    data: resultDistribusiPersentaseAktivitasDosen,
+    error: errorDistribusiPersentaseAktivitasDosen,
+    isLoading: isLoadingDistribusiPersentaseAktivitasDosen,
+  } = useSWR(apiUrlDistribusiPersentaseAktivitasDosen, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 10000,
+  });
+
   const apiUrlDistribusiAktivitasDosen = `/api/aktivitas-dosen/distribusi-aktivitas-dosen?year=${
     activeReportingYear || ''
   }`;
@@ -57,14 +70,27 @@ export default function AktivitasDosenClient({
     dedupingInterval: 10000,
   });
 
-  const apiUrlDistribusiAktivitasMengajarDosen = `/api/aktivitas-dosen/distribusi-aktivitas-mengajar-dosen?year=${
+  const apiUrlDistribusiMembinaLomba = `/api/aktivitas-dosen/distribusi-membina-lomba?year=${
     activeReportingYear || ''
   }`;
   const {
-    data: resultDistribusiAktivitasMengajarDosen,
-    error: errorDistribusiAktivitasMengajarDosen,
-    isLoading: isLoadingDistribusiAktivitasMengajarDosen,
-  } = useSWR(apiUrlDistribusiAktivitasMengajarDosen, fetcher, {
+    data: resultDistribusiMembinaLomba,
+    error: errorDistribusiMembinaLomba,
+    isLoading: isLoadingDistribusiMembinaLomba,
+  } = useSWR(apiUrlDistribusiMembinaLomba, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 10000,
+  });
+
+  const apiUrlSumberDanaPenelitianPkm = `/api/aktivitas-dosen/sumber-dana-penelitian-pkm?year=${
+    activeReportingYear || ''
+  }`;
+  const {
+    data: resultSumberDanaPenelitianPkm,
+    error: errorSumberDanaPenelitianPkm,
+    isLoading: isLoadingSumberDanaPenelitianPkm,
+  } = useSWR(apiUrlSumberDanaPenelitianPkm, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
     dedupingInterval: 10000,
@@ -76,15 +102,25 @@ export default function AktivitasDosenClient({
       isLoading: isLoadingInfoAgregatAktivitasDosen,
       error: errorInfoAgregatAktivitasDosen,
     },
+    distribusiPersentaseAktivitasDosen: {
+      data: resultDistribusiPersentaseAktivitasDosen?.data,
+      isLoading: isLoadingDistribusiPersentaseAktivitasDosen,
+      error: errorDistribusiPersentaseAktivitasDosen,
+    },
     distribusiAktivitasDosen: {
       data: resultDistribusiAktivitasDosen?.data,
       isLoading: isLoadingDistribusiAktivitasDosen,
       error: errorDistribusiAktivitasDosen,
     },
-    distribusiAktivitasMengajarDosen: {
-      data: resultDistribusiAktivitasMengajarDosen?.data,
-      isLoading: isLoadingDistribusiAktivitasMengajarDosen,
-      error: errorDistribusiAktivitasMengajarDosen,
+    distribusiMembinaLomba: {
+      data: resultDistribusiMembinaLomba?.data,
+      isLoading: isLoadingDistribusiMembinaLomba,
+      error: errorDistribusiMembinaLomba,
+    },
+    sumberDanaPenelitianPkm: {
+      data: resultSumberDanaPenelitianPkm?.data,
+      isLoading: isLoadingSumberDanaPenelitianPkm,
+      error: errorSumberDanaPenelitianPkm,
     },
   };
 

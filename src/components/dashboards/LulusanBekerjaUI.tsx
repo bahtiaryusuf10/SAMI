@@ -7,20 +7,10 @@ import { MySingleValueChart } from '@/components/charts/MySingleValueChart';
 import { DashboardGridLayout } from '@/components/DashboardGridLayout';
 import BubbleChat from '@/components/forms/BubbleChat';
 import ImportDialog from '@/components/ImportDialog';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogHeader,
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import {
-  // LineChart,
-  // Briefcase,
   GraduationCap,
   Loader2,
-  FileSpreadsheet,
   AlertTriangle,
   Wallet,
   Hourglass,
@@ -33,7 +23,7 @@ import { DashboardProvider } from '@/contexts/DashboardContext';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
 import { QuickFilter } from '@/components/settings/QuickFilter';
 import { ColumnDef } from '@tanstack/react-table';
-import { MyDataTableMaster } from '../tables/MyDataTableMaster';
+import { DrilldownModal } from '../Modal/DrilldownModal';
 
 interface DataState<T> {
   data: T | null;
@@ -549,63 +539,21 @@ export function LulusanBekerjaUI({
                   {chartChildren}
                 </DashboardGridLayout>
               </div>
-              <Dialog
-                open={dataTempatBekerja !== null}
-                onOpenChange={(isOpen) => {
-                  if (!isOpen) {
-                    setDataTempatBekerja(null);
-                    setSelectedLokasiBekerja(null);
-                  }
+              <DrilldownModal
+                isOpen={dataTempatBekerja !== null}
+                onClose={() => {
+                  setDataTempatBekerja(null);
+                  setSelectedLokasiBekerja(null);
                 }}
-              >
-                <DialogContent
-                  className="sm:max-w-4xl bg-white border-gray-700 gap-1"
-                  onOpenAutoFocus={(e) => e.preventDefault()}
-                >
-                  <DialogHeader>
-                    <div className="flex items-center justify-between pr-8">
-                      <div className="flex flex-col gap-2">
-                        <DialogTitle className="text-black">
-                          Tempat Bekerja di {selectedLokasiBekerja}
-                        </DialogTitle>
-                        <DialogDescription className="text-gray-400">
-                          Berikut adalah daftar tempat kerja untuk provinsi yang
-                          dipilih.
-                        </DialogDescription>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        className="justify-between font-normal bg-gray-100 text-gray-400 hover:text-blue-400  rounded-full "
-                        onClick={handleExportDrilldownData}
-                      >
-                        Export to XLSX
-                        <FileSpreadsheet className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </DialogHeader>
-
-                  <div className="pb-4 overflow-x-auto">
-                    {isDrilldownTempatBekerjaLoading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
-                        <span className="ml-2 text-white text-md">
-                          Loading...
-                        </span>
-                      </>
-                    ) : (
-                      dataTempatBekerja && (
-                        <MyDataTableMaster
-                          columns={workplaceColumns}
-                          data={dataTempatBekerja || []}
-                          searchPlaceholder="Cari berdasarkan Nama Perusahaan [ / ]"
-                          isLoading={isDrilldownTempatBekerjaLoading}
-                          initialPageSize={8}
-                        />
-                      )
-                    )}
-                  </div>
-                </DialogContent>
-              </Dialog>
+                title={`Tempat Bekerja di ${selectedLokasiBekerja}`}
+                description={`Berikut adalah daftar tempat kerja untuk ${selectedLokasiBekerja}.`}
+                columns={workplaceColumns}
+                data={dataTempatBekerja}
+                isLoading={isDrilldownTempatBekerjaLoading}
+                onExport={handleExportDrilldownData}
+                initialPageSize={8}
+                searchPlaceholder="Cari berdasarkan Nama Perusahaan [ / ]"
+              />
               {!isPublicView && (
                 <div className="flex flex-wrap gap-4">
                   <ImportDialog type="graduates" />

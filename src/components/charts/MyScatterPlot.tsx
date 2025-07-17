@@ -1,9 +1,11 @@
 import { exportAsPng, exportAsXlsx } from '@/lib/utils/handleExportFile';
-import { ColorSchemeId } from '@nivo/colors';
+import { ColorSchemeId, useOrdinalColorScale } from '@nivo/colors';
 import { ResponsiveScatterPlot } from '@nivo/scatterplot';
 import { AlertTriangle, Loader2 } from 'lucide-react';
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { ScatterPlotSettings } from '../settings/ScatterPlotSettings';
+import Draggable from 'react-draggable';
+import { ScatterCustomLegend } from './ScatterCustomLegend';
 
 interface MyScatterPlotProps {
   colorScheme: ColorSchemeId;
@@ -29,6 +31,19 @@ export const MyScatterPlot = ({
   axisBottomLegend,
   axisLeftLegend,
 }: MyScatterPlotProps) => {
+  const [hiddenKeys, setHiddenKeys] = useState<Record<string, boolean>>({});
+
+  const handleLegendClick = (id: string) => {
+    setHiddenKeys((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const visibleData = useMemo(
+    () => data.filter((series) => !hiddenKeys[series.id]),
+    [data, hiddenKeys]
+  );
+
+  const getColor = useOrdinalColorScale({ scheme: colorScheme }, 'id');
+
   // Export
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -43,11 +58,12 @@ export const MyScatterPlot = ({
   };
 
   const getColors = useMemo(() => ({ scheme: colorScheme }), [colorScheme]);
+  const legendRef = useRef(null);
 
   return (
     <div
       ref={chartRef}
-      className="bg-white rounded-xl shadow p-5 w-full h-full max-w-full transition-shadow hover:shadow-lg hover:scale-[1.01] duration-200"
+      className="bg-white rounded-xl shadow p-5 w-full h-full max-w-full transition-shadow hover:shadow-lg hover:scale-[1.01] duration-200 flex flex-col"
     >
       <div className="flex flex-col sm:flex-row sm:justify-between mb-3 relative">
         <div className="flex flex-col items-start">
@@ -74,7 +90,7 @@ export const MyScatterPlot = ({
         </div>
       </div>
       <div
-        className="relative w-full h-full pb-7 px-5 overflow-hidden"
+        className="relative w-full flex-1 mb-4 px-5 overflow-hidden"
         data-no-drag
       >
         {isLoading ? (
@@ -88,59 +104,56 @@ export const MyScatterPlot = ({
             <p className="ml-2 text-red-400 text-md">Gagal memuat data.</p>
           </div>
         ) : (
-          <ResponsiveScatterPlot
-            data={data}
-            margin={{ top: 45, right: 100, bottom: 95, left: 75 }}
-            xScale={{ type: 'linear', min: 0, max: 'auto' }}
-            xFormat=">-.2f"
-            yScale={{ type: 'linear', min: 0, max: 'auto' }}
-            yFormat=">-.2f"
-            blendMode="normal"
-            colors={getColors}
-            axisTop={null}
-            axisRight={null}
-            axisBottom={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-              legend: axisBottomLegend,
-              legendPosition: 'middle',
-              legendOffset: 46,
-              truncateTickAt: 0,
-            }}
-            axisLeft={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-              legend: axisLeftLegend,
-              legendPosition: 'middle',
-              legendOffset: -60,
-              truncateTickAt: 0,
-            }}
-            legends={[
-              {
-                anchor: 'bottom-right',
-                direction: 'column',
-                justify: false,
-                translateX: 115,
-                translateY: 0,
-                itemWidth: 100,
-                itemHeight: 12,
-                itemsSpacing: 5,
-                itemDirection: 'left-to-right',
-                symbolSize: 15,
-                symbolShape: 'circle',
-                effects: [
-                  {
-                    on: 'hover',
-                    style: {
-                      itemOpacity: 1,
-                    },
-                  },
-                ],
-              },
-            ]}
-          />
+          <>
+            <ResponsiveScatterPlot
+              data={visibleData}
+              margin={{ top: 45, right: 30, bottom: 50, left: 75 }}
+              xScale={{ type: 'linear', min: 0, max: 'auto' }}
+              xFormat=">-.2f"
+              yScale={{ type: 'linear', min: 0, max: 'auto' }}
+              yFormat=">-.2f"
+              blendMode="normal"
+              colors={getColors}
+              axisTop={null}
+              axisRight={null}
+              axisBottom={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: 0,
+                legend: axisBottomLegend,
+                legendPosition: 'middle',
+                legendOffset: 46,
+                truncateTickAt: 0,
+              }}
+              axisLeft={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: 0,
+                legend: axisLeftLegend,
+                legendPosition: 'middle',
+                legendOffset: -60,
+                truncateTickAt: 0,
+              }}
+              legends={[]}
+            />
+            <Draggable
+              nodeRef={legendRef}
+              handle=".drag-handle"
+              bounds="parent"
+            >
+              <div ref={legendRef} className="absolute top-15 left-30 z-10">
+                <ScatterCustomLegend
+                  series={data.map((d) => ({
+                    id: d.id,
+                    label: d.id,
+                    color: getColor({ id: d.id }),
+                  }))}
+                  hiddenKeys={hiddenKeys}
+                  onToggle={handleLegendClick}
+                />
+              </div>
+            </Draggable>
+          </>
         )}
       </div>
     </div>

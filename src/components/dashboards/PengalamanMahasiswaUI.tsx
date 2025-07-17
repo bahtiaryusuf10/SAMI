@@ -13,7 +13,6 @@ import {
   ArrowUpDown,
   BadgeCheck,
   Briefcase,
-  FileSpreadsheet,
   Loader2,
   User,
 } from 'lucide-react';
@@ -25,14 +24,7 @@ import { MyScatterPlot } from '../charts/MyScatterPlot';
 import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '../ui/button';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '../ui/dialog';
-import { MyDataTableMaster } from '../tables/MyDataTableMaster';
+import { DrilldownModal } from '../Modal/DrilldownModal';
 
 interface DataState<T> {
   data: T | null;
@@ -165,7 +157,12 @@ const achievementColumns: ColumnDef<DataTable>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="text-left w-[250px] truncate">{row.getValue('name')}</div>
+      <div
+        className="text-left w-[250px] truncate"
+        title={row.getValue('name')}
+      >
+        {row.getValue('name')}
+      </div>
     ),
     meta: {
       displayName: 'Nama Kompetisi',
@@ -488,65 +485,23 @@ export function PengalamanMahasiswaUI({
                   {chartChildren}
                 </DashboardGridLayout>
               </div>
-              <Dialog
-                open={dataPrestasi !== null}
-                onOpenChange={(isOpen) => {
-                  if (!isOpen) {
-                    setDataPrestasi(null);
-                    setSelectedKategori(null);
-                    setSelectedLevel(null);
-                  }
+              <DrilldownModal
+                isOpen={dataPrestasi !== null}
+                onClose={() => {
+                  setDataPrestasi(null);
+                  setSelectedKategori(null);
+                  setSelectedLevel(null);
                 }}
-              >
-                <DialogContent
-                  className="sm:max-w-4xl bg-white border-gray-700 gap-1"
-                  onOpenAutoFocus={(e) => e.preventDefault()}
-                >
-                  <DialogHeader>
-                    <div className="flex items-center justify-between pr-8">
-                      <div className="flex flex-col gap-2">
-                        <DialogTitle className="text-black">
-                          Prestasi kategori {selectedKategori} di tingkat{' '}
-                          {selectedLevel}
-                        </DialogTitle>
-                        <DialogDescription className="text-gray-400">
-                          Berikut adalah daftar prestasi untuk kategori yang
-                          dipilih.
-                        </DialogDescription>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        className="justify-between font-normal bg-gray-100 text-gray-400 hover:text-blue-400  rounded-full "
-                        onClick={handleExportDrilldownData}
-                      >
-                        Export to XLSX
-                        <FileSpreadsheet className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </DialogHeader>
-
-                  <div className="pb-4 overflow-x-auto">
-                    {isDrilldownPrestasiLoading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
-                        <span className="ml-2 text-white text-md">
-                          Loading...
-                        </span>
-                      </>
-                    ) : (
-                      dataPrestasi && (
-                        <MyDataTableMaster
-                          columns={achievementColumns}
-                          data={dataPrestasi || []}
-                          searchPlaceholder="Cari berdasarkan Nama atau Pencapaian [ / ]"
-                          isLoading={isDrilldownPrestasiLoading}
-                          initialPageSize={8}
-                        />
-                      )
-                    )}
-                  </div>
-                </DialogContent>
-              </Dialog>
+                title={` Prestasi kategori ${selectedKategori} di tingkat ${' '}
+                          ${selectedLevel}`}
+                description={`Berikut adalah daftar prestasi untuk kategori ${selectedKategori} di tingkat ${selectedLevel}.`}
+                columns={achievementColumns}
+                data={dataPrestasi}
+                isLoading={isDrilldownPrestasiLoading}
+                onExport={handleExportDrilldownData}
+                initialPageSize={8}
+                searchPlaceholder="Cari berdasarkan Nama atau Pencapaian [ / ]"
+              />
               {!isPublicView && (
                 <div className="flex flex-wrap gap-4">
                   <ImportDialog type="mbkms" />
