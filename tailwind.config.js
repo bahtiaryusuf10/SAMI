@@ -13,5 +13,6 @@ module.exports = {
       sm: '500px',
     },
   },
-  plugins: [],
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  plugins: [require('@tailwindcss/line-clamp')],
 };

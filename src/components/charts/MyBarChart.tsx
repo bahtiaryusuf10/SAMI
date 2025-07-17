@@ -13,6 +13,9 @@ import { useMemo, useRef, useState } from 'react';
 import { BarChartSettings } from '../settings/BarChartSettings';
 import { exportAsPng, exportAsXlsx } from '@/lib/utils/handleExportFile';
 import { BarCustomLegend } from './BarCustomLegend';
+import { normalizeTitleCase } from '@/lib/utils';
+import { ChartBreadcrumb } from './ChartBreadcrumb';
+import Draggable from 'react-draggable';
 
 interface MyBarChartProps {
   pageKey: string;
@@ -32,8 +35,11 @@ interface MyBarChartProps {
   axisLeftLegend: string;
   title: string;
   type?: 'small' | 'medium' | 'large';
+  layout?: 'vertical' | 'horizontal';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onClick?: (data: any) => void;
+  breadcrumbs?: { label: string; level: number }[];
+  onBreadcrumbClick?: (level: number) => void;
 }
 
 export const MyBarChart = ({
@@ -51,7 +57,10 @@ export const MyBarChart = ({
   axisBottomLegend,
   axisLeftLegend,
   title,
+  layout: layoutFromProps,
   onClick,
+  breadcrumbs,
+  onBreadcrumbClick,
 }: MyBarChartProps) => {
   const [hiddenKeys, setHiddenKeys] = useState<Record<string, boolean>>({});
 
@@ -88,7 +97,7 @@ export const MyBarChart = ({
   );
 
   const {
-    layout = 'vertical',
+    layout = layoutFromProps || 'vertical',
     groupMode = 'grouped',
     sortByValue = false,
   } = chartSettings || {};
@@ -106,10 +115,12 @@ export const MyBarChart = ({
     return [...data].sort((a, b) => (a[sortKey] || 0) - (b[sortKey] || 0));
   }, [data, sortByValue, dataKeys]);
 
+  const legendRef = useRef(null);
+
   return (
     <div
       ref={chartRef}
-      className="bg-white rounded-xl shadow p-5 w-full h-full max-w-full transition-shadow hover:shadow-lg hover:scale-[1.01] duration-200"
+      className="bg-white rounded-xl shadow p-5 w-full h-full max-w-full transition-shadow hover:shadow-lg hover:scale-[1.01] duration-200 flex flex-col"
     >
       <div className="flex flex-col sm:flex-row sm:justify-between mb-3 relative">
         <div className="flex flex-col items-start">
@@ -149,7 +160,18 @@ export const MyBarChart = ({
           />
         </div>
       </div>
-      <div className="relative w-full h-full pb-7 px-5" data-no-drag>
+      <div
+        className="relative w-full flex-1 mb-3 px-5 overflow-hidden"
+        data-no-drag
+      >
+        <div className="absolute -top-2 right-1 z-10">
+          {breadcrumbs && breadcrumbs.length > 1 && onBreadcrumbClick && (
+            <ChartBreadcrumb
+              crumbs={breadcrumbs}
+              onCrumbClick={onBreadcrumbClick}
+            />
+          )}
+        </div>
         {isLoading ? (
           <div className="flex justify-center items-center w-full h-full -mt-8">
             <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
@@ -168,11 +190,11 @@ export const MyBarChart = ({
               indexBy={indexBy}
               margin={
                 dataKeys.length > 1
-                  ? { top: 20, right: 20, bottom: 90, left: 60 }
+                  ? { top: 30, right: 20, bottom: 50, left: 60 }
                   : {
-                      top: 20,
+                      top: 30,
                       right: layout === 'vertical' ? 20 : 30,
-                      bottom: 90,
+                      bottom: 50,
                       left: layout === 'vertical' ? 60 : 80,
                     }
               }
@@ -205,7 +227,7 @@ export const MyBarChart = ({
                     </>
                   ) : (
                     <>
-                      {indexValue}: <strong>{value}</strong>
+                      {normalizeTitleCase(indexValue)}: <strong>{value}</strong>
                     </>
                   )}
                 </div>
@@ -216,11 +238,12 @@ export const MyBarChart = ({
                 tickSize: 5,
                 tickPadding: 5,
                 tickRotation: 0,
-                truncateTickAt: 21,
+                truncateTickAt: sortedData.length > 4 ? 17 : 21,
                 legend:
                   layout === 'vertical' ? axisBottomLegend : axisLeftLegend,
                 legendPosition: 'middle',
                 legendOffset: 40,
+                format: (value) => normalizeTitleCase(value),
               }}
               axisLeft={{
                 tickSize: 5,
@@ -233,9 +256,8 @@ export const MyBarChart = ({
                 legendPosition: 'middle',
                 legendOffset:
                   layout === 'vertical' ? -50 : dataKeys.length > 1 ? -55 : -75,
+                format: (value) => normalizeTitleCase(value),
               }}
-              // enableGridX={layout === 'horizontal'}
-              // enableGridY={layout === 'vertical'}
               labelSkipWidth={12}
               labelSkipHeight={12}
               labelTextColor={{
@@ -243,57 +265,23 @@ export const MyBarChart = ({
                 modifiers: [['darker', 1.6]],
               }}
               legends={[]}
-              // legends={
-              //   dataKeys.length > 1
-              //     ? [
-              //         {
-              //           dataFrom: 'keys',
-              //           anchor: 'top-right',
-              //           direction: 'column',
-              //           justify: false,
-              //           translateX: -15,
-              //           translateY: 20,
-              //           // translateX: 20,
-              //           itemsSpacing: 2,
-              //           itemWidth: 100,
-              //           itemHeight: 20,
-              //           // itemDirection: 'left-to-right',
-              //           itemOpacity: 0.85,
-              //           symbolSize: 15,
-              //           effects: [
-              //             {
-              //               on: 'hover',
-              //               style: {
-              //                 itemTextColor: '#000',
-              //                 itemBackground: '#f5f5f5',
-              //                 itemOpacity: 1,
-              //                 symbolSize: 18,
-              //                 symbolBorderColor: '#333',
-              //               },
-              //             },
-              //           ],
-              //           // onClick: (data) => toggleKey(data.id as string),
-              //           // data: keys.map((key) => ({
-              //           //   id: key,
-              //           //   label: key,
-              //           //   color: getColor({ id: key }),
-              //           //   opacity: hiddenKeys.includes(key) ? 1 : 0.3,
-              //           // })),
-              //         },
-              //       ]
-              //     : []
-              // }
               onClick={onClick}
             />
             {dataKeys.length > 1 && (
-              <div className="absolute top-8 right-13 z-10">
-                <BarCustomLegend
-                  keys={dataKeys}
-                  colorScheme={colorScheme}
-                  hiddenKeys={hiddenKeys}
-                  onToggle={handleLegendClick}
-                />
-              </div>
+              <Draggable
+                nodeRef={legendRef}
+                handle=".drag-handle"
+                bounds="parent"
+              >
+                <div ref={legendRef} className="absolute top-8 right-13 z-10">
+                  <BarCustomLegend
+                    keys={dataKeys}
+                    colorScheme={colorScheme}
+                    hiddenKeys={hiddenKeys}
+                    onToggle={handleLegendClick}
+                  />
+                </div>
+              </Draggable>
             )}
           </>
         )}

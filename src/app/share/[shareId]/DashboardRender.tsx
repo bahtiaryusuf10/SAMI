@@ -30,7 +30,6 @@ export async function DashboardRenderer({
           />
         );
       }
-
       case 'pengalaman-mahasiswa': {
         const dashboard = dashboardComponents['pengalaman-mahasiswa'];
         const rawData = await dashboard.fetchData(filter);
@@ -43,7 +42,66 @@ export async function DashboardRenderer({
           />
         );
       }
+      case 'aktivitas-dosen': {
+        const dashboard = dashboardComponents['aktivitas-dosen'];
+        const rawData = await dashboard.fetchData(filter);
+        const transformedData = dashboard.transformData(rawData);
 
+        return (
+          <dashboard.component
+            {...commonProps}
+            dashboardData={transformedData}
+          />
+        );
+      }
+      // case 'praktisi-mengajar': {
+      //   const dashboard = dashboardComponents['praktisi-mengajar'];
+      //   const rawData = await dashboard.fetchData(filter);
+      //   const transformedData = dashboard.transformData(rawData);
+
+      //   return (
+      //     <dashboard.component
+      //       {...commonProps}
+      //       dashboardData={transformedData}
+      //     />
+      //   );
+      // }
+      // case 'karya-dosen-terdampak': {
+      //   const dashboard = dashboardComponents['karya-dosen-terdampak'];
+      //   const rawData = await dashboard.fetchData(filter);
+      //   const transformedData = dashboard.transformData(rawData);
+
+      //   return (
+      //     <dashboard.component
+      //       {...commonProps}
+      //       dashboardData={transformedData}
+      //     />
+      //   );
+      // }
+      // case 'kerja-sama-global': {
+      //   const dashboard = dashboardComponents['kerja-sama-global'];
+      //   const rawData = await dashboard.fetchData(filter);
+      //   const transformedData = dashboard.transformData(rawData);
+
+      //   return (
+      //     <dashboard.component
+      //       {...commonProps}
+      //       dashboardData={transformedData}
+      //     />
+      //   );
+      // }
+      // case 'kelas-kolaboratif': {
+      //   const dashboard = dashboardComponents['kelas-kolaboratif'];
+      //   const rawData = await dashboard.fetchData(filter);
+      //   const transformedData = dashboard.transformData(rawData);
+
+      //   return (
+      //     <dashboard.component
+      //       {...commonProps}
+      //       dashboardData={transformedData}
+      //     />
+      //   );
+      // }
       case 'standar-internasional': {
         const dashboard = dashboardComponents['standar-internasional'];
         const rawData = await dashboard.fetchData(filter);
@@ -56,7 +114,6 @@ export async function DashboardRenderer({
           />
         );
       }
-
       default:
         return notFound();
     }

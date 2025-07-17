@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 type MySingleValueChartProps = {
   icon: React.ReactNode;
   label: string;
-  value: number;
+  value?: number;
   valueString?: string;
   displayValue?: string;
   targetLabel: string;
@@ -46,7 +46,10 @@ export function MySingleValueChart({
   targetValue,
   direction,
 }: MySingleValueChartProps) {
-  const colorClass = getColor(value, targetValue, direction);
+  let colorClass = 'text-blue-400';
+  if (typeof value === 'number') {
+    colorClass = getColor(value, targetValue, direction);
+  }
 
   return (
     <Card className="flex-1 min-w-[200px] max-w-full py-8 transition-shadow">

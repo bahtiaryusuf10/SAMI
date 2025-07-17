@@ -125,7 +125,6 @@ export function StandarInternasionalUI({
                     <MySingleValueChart
                       icon={<Globe className="h-10 w-10 text-blue-400" />}
                       label="Internasional"
-                      value={0}
                       valueString={
                         infoAkreditasi.data?.find(
                           (acc) => acc.level === 'Internasional'
@@ -136,7 +135,6 @@ export function StandarInternasionalUI({
                     <MySingleValueChart
                       icon={<Medal className="h-10 w-10 text-blue-400" />}
                       label="Nasional"
-                      value={0}
                       valueString={
                         infoAkreditasi.data?.find(
                           (acc) => acc.level === 'Nasional'

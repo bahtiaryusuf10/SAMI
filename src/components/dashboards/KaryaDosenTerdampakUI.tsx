@@ -9,12 +9,36 @@ import { ShareButton } from '../ShareButton';
 import { QuickFilter } from '../settings/QuickFilter';
 import { AlertTriangle, Globe, Loader2, Search, Users } from 'lucide-react';
 import { MySingleValueChart } from '../charts/MySingleValueChart';
+import { MyPieChart } from '../charts/MyPieChart';
+import { useCallback, useMemo, useState } from 'react';
+import { DashboardGridLayout } from '../DashboardGridLayout';
+import { MyBarChart } from '../charts/MyBarChart';
+import { MyLineChart } from '../charts/MyLineChart';
 
 interface DataState<T> {
   data: T | null;
   isLoading: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any;
+}
+
+// interface ChartDataBar {
+//   label: string;
+//   value: number;
+// }
+
+interface ChartDataPie {
+  id: string;
+  label: string;
+  value: number;
+}
+
+interface ChartDataLine {
+  id: string;
+  data: {
+    x: string | number;
+    y: number;
+  }[];
 }
 
 interface InfoAgregatKaryaDosen {
@@ -25,6 +49,9 @@ interface InfoAgregatKaryaDosen {
 
 interface DashboardData {
   infoAgregatKaryaDosen: DataState<InfoAgregatKaryaDosen>;
+  distribusiTingkatPublikasi: DataState<ChartDataPie>;
+  trenPublikasiPerTahun: DataState<ChartDataLine>;
+  trenSitasiPerDosen: DataState<ChartDataLine>;
 }
 
 interface KaryaDosenTerdampakUIProps {
@@ -33,6 +60,51 @@ interface KaryaDosenTerdampakUIProps {
   isPublicView?: boolean;
   initialActiveYear?: number | null;
 }
+
+interface DashboardConfigItem {
+  id: string;
+  title: string;
+  type: 'small' | 'semiMedium' | 'medium' | 'semiLarge' | 'large' | 'full';
+  isPercentage?: boolean;
+  isDrillDown?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  chartProps?: Record<string, any>;
+}
+
+const dashboardConfig: DashboardConfigItem[] = [
+  {
+    id: 'distribusi-tingkat-publikasi',
+    title: 'Distribusi Tingkat Publikasi',
+    type: 'medium',
+    isPercentage: true,
+    isDrillDown: true,
+    component: MyPieChart,
+  },
+  {
+    id: 'tren-publikasi-per-tahun',
+    title: 'Tren Publikasi Per Tahun',
+    type: 'medium',
+    component: MyLineChart,
+    chartProps: {
+      axisLeftLegend: 'Jumlah Publikasi',
+      axisBottomLegend: 'Tahun',
+    },
+  },
+  {
+    id: 'tren-sitasi-per-dosen',
+    title: 'Top 5 Jumlah Sitasi Per Tahun',
+    type: 'full',
+    component: MyLineChart,
+    chartProps: {
+      axisLeftLegend: 'Jumlah Sitasi',
+      axisBottomLegend: 'Tahun',
+    },
+  },
+] as const;
+
+type DashboardId = (typeof dashboardConfig)[number]['id'];
 
 export function KaryaDosenTerdampakUI({
   pageKey,
@@ -58,7 +130,20 @@ export function KaryaDosenTerdampakUI({
     setActiveYear(pageKey, newYear === 'all' ? null : parseInt(newYear));
   };
 
-  const { infoAgregatKaryaDosen } = dashboardData;
+  const {
+    infoAgregatKaryaDosen,
+    distribusiTingkatPublikasi,
+    trenPublikasiPerTahun,
+    trenSitasiPerDosen,
+  } = dashboardData;
+
+  // Drilldown tingkat publikasi
+  const [activeTingkatPublikasiData, setActiveTingkatPublikasiData] =
+    useState(null);
+  const [tingkatPublikasiBreadcrumbs, setTingkatPublikasiBreadcrumbs] =
+    useState([{ label: 'Tingkat Publikasi', level: 0 }]);
+  const [isTingkatPublikasiLoading, setIsTingkatPublikasiLoading] =
+    useState(false);
 
   // Dashboard Settings
   const pageSettings = useDashboardSettingsStore(
@@ -74,6 +159,137 @@ export function KaryaDosenTerdampakUI({
   const setPageShowLabels = useDashboardSettingsStore(
     (state) => state.setPageShowLabels
   );
+
+  // Drilldown Data Handling for Publication Level
+  const handleDrilldownTingkatPublikasi = useCallback(
+    async (pieData: { id: string }) => {
+      const level = pieData.id;
+
+      if (tingkatPublikasiBreadcrumbs.length > 1) return;
+
+      setIsTingkatPublikasiLoading(true);
+      try {
+        const baseUrl = `/api/public/karya-dosen-terdampak/drilldown-tingkat-publikasi?level=${level}`;
+        const finalUrl = activeReportingYear
+          ? `${baseUrl}&year=${activeReportingYear}`
+          : baseUrl;
+        const response = await fetch(finalUrl);
+
+        if (!response.ok) throw new Error('Gagal fetch data detail');
+
+        const result = await response.json();
+
+        setActiveTingkatPublikasiData(result.data);
+        setTingkatPublikasiBreadcrumbs((prev) => [
+          ...prev,
+          { label: `${level}`, level: 1 },
+        ]);
+      } catch (error) {
+        console.error(error);
+        setActiveTingkatPublikasiData(null);
+      } finally {
+        setIsTingkatPublikasiLoading(false);
+      }
+    },
+    [activeReportingYear, tingkatPublikasiBreadcrumbs]
+  );
+
+  const handleTingkatPublikasiBreadcrumbClick = useCallback((level: number) => {
+    if (level === 0) {
+      setTingkatPublikasiBreadcrumbs((prev) => prev.slice(0, 1));
+    }
+  }, []);
+
+  // Chart Component
+  const chartChildren = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dataStateMap: Record<DashboardId, DataState<any>> = {
+      'distribusi-tingkat-publikasi': distribusiTingkatPublikasi,
+      'tren-publikasi-per-tahun': trenPublikasiPerTahun,
+      'tren-sitasi-per-dosen': trenSitasiPerDosen,
+    };
+
+    const dynamicDescription = `Data untuk tahun laporan ${activeReportingYear}`;
+
+    // eslint-disable-next-line prefer-const
+    let tempDashboardConfig = [...dashboardConfig];
+
+    if (tingkatPublikasiBreadcrumbs.length > 1) {
+      const tingkatPublikasiChartIndex = tempDashboardConfig.findIndex(
+        (config) => config.id === 'distribusi-tingkat-publikasi'
+      );
+
+      if (tingkatPublikasiChartIndex !== -1) {
+        tempDashboardConfig[tingkatPublikasiChartIndex] = {
+          ...tempDashboardConfig[tingkatPublikasiChartIndex],
+          title: `Distribusi Tingkat Publikasi`,
+          component: MyBarChart,
+          chartProps: {
+            layout: 'vertical',
+            dataKeys: ['value'],
+            indexBy: 'label',
+            axisBottomLegend: 'Tingkat',
+            axisLeftLegend: 'Jumlah',
+            breadcrumbs: tingkatPublikasiBreadcrumbs,
+            onBreadcrumbClick: handleTingkatPublikasiBreadcrumbClick,
+          },
+        };
+      }
+    }
+
+    if (tingkatPublikasiBreadcrumbs.length > 1) {
+      dataStateMap['distribusi-tingkat-publikasi'] = {
+        data: activeTingkatPublikasiData,
+        isLoading: isTingkatPublikasiLoading,
+        error: null,
+      };
+    }
+
+    return tempDashboardConfig.map((config) => {
+      const ChartComponent = config.component;
+      const chartState = dataStateMap[config.id];
+      const chartProps = { ...(config.chartProps ?? {}) };
+
+      if (config.id === 'distribusi-tingkat-publikasi') {
+        chartProps.onClick = handleDrilldownTingkatPublikasi;
+      }
+
+      if (!chartState) return null;
+
+      return (
+        <ChartComponent
+          key={config.id}
+          title={config.title}
+          type={config.type as 'small' | 'medium' | 'large'}
+          isPercentage={config.isPercentage}
+          drillDown={config.isDrillDown}
+          description={dynamicDescription}
+          data={chartState.data || []}
+          isLoading={chartState.isLoading}
+          error={chartState.error}
+          pageKey={pageKey}
+          chartId={config.id}
+          colorScheme={theme}
+          enableLabel={showLabels}
+          enableArcLabels={showLabels}
+          {...chartProps}
+        />
+      );
+    });
+  }, [
+    distribusiTingkatPublikasi,
+    trenPublikasiPerTahun,
+    trenSitasiPerDosen,
+    activeReportingYear,
+    tingkatPublikasiBreadcrumbs,
+    handleTingkatPublikasiBreadcrumbClick,
+    activeTingkatPublikasiData,
+    isTingkatPublikasiLoading,
+    pageKey,
+    theme,
+    showLabels,
+    handleDrilldownTingkatPublikasi,
+  ]);
 
   return (
     <DashboardProvider isPublicView={isPublicView}>
@@ -182,6 +398,11 @@ export function KaryaDosenTerdampakUI({
                     />
                   </>
                 )}
+              </div>
+              <div className="-mx-4">
+                <DashboardGridLayout pageKey={pageKey}>
+                  {chartChildren}
+                </DashboardGridLayout>
               </div>
               {!isPublicView && (
                 <div className="flex flex-wrap gap-4">

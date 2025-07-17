@@ -9,12 +9,12 @@ export async function GET(request: Request) {
 
   try {
     const { data, error } = await supabase.rpc(
-      'get_teach_activity_distribution',
+      'get_research_service_fund_comparison',
       { p_report_year: reportingYear ? parseInt(reportingYear) : null }
     );
 
     if (error) {
-      throw new Error(`Error fetching lecturer teaching activity distribution data: ${error.message}`);
+      throw new Error(`Error fetching research service fund comparison data: ${error.message}`);
     }
 
     return NextResponse.json({

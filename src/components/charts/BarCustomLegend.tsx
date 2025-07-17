@@ -1,6 +1,7 @@
 'use client';
 
 import { ColorSchemeId, useOrdinalColorScale } from '@nivo/colors';
+import { GripVertical } from 'lucide-react';
 
 interface BarCustomLegendProps {
   keys: string[];
@@ -19,6 +20,9 @@ export const BarCustomLegend = ({
 
   return (
     <div className="bg-white/80 backdrop-blur-md p-3 rounded-lg shadow-md border border-gray-200">
+      <div className="drag-handle cursor-move text-center text-gray-400 mb-1">
+        <GripVertical size={20} className="inline-block rotate-90" />
+      </div>
       <div className="flex flex-col gap-1">
         {keys.map((key) => (
           <div

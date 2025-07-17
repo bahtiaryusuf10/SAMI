@@ -10,18 +10,46 @@ import { ShareButton } from '../ShareButton';
 import { MySingleValueChart } from '../charts/MySingleValueChart';
 import {
   AlertTriangle,
+  ArrowUpDown,
   BadgeCheck,
   GraduationCap,
   Loader2,
   Rocket,
   User,
 } from 'lucide-react';
+import { MyPieChart } from '../charts/MyPieChart';
+import { useCallback, useMemo, useState } from 'react';
+import { DashboardGridLayout } from '../DashboardGridLayout';
+import { MyBarChart } from '../charts/MyBarChart';
+import { exportAsXlsx } from '@/lib/utils/handleExportFile';
+import { DrilldownModal } from '../Modal/DrilldownModal';
+import { Button } from '../ui/button';
+import { ColumnDef } from '@tanstack/react-table';
+import { normalizeTitleCase } from '@/lib/utils';
 
 interface DataState<T> {
   data: T | null;
   isLoading: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any;
+}
+
+interface ChartDataPie {
+  id: string;
+  label: string;
+  value: number;
+}
+
+interface ChartDataBar {
+  label: string;
+  value: number;
+}
+
+interface DataTable {
+  practitioner_name: string;
+  profession: string;
+  workplace: string;
+  teaching_date: string;
 }
 
 interface InfoAgregatPraktisi {
@@ -33,6 +61,10 @@ interface InfoAgregatPraktisi {
 
 interface DashboardData {
   infoAgregatPraktisi: DataState<InfoAgregatPraktisi>;
+  distribusiJabatanDosen: DataState<ChartDataBar>;
+  top5MataKuliah: DataState<ChartDataBar>;
+  distribusiPerusahaan: DataState<ChartDataPie>;
+  sertifikasiProfesi: DataState<ChartDataBar>;
 }
 
 interface PraktisiMengajarUIProps {
@@ -41,6 +73,162 @@ interface PraktisiMengajarUIProps {
   isPublicView?: boolean;
   initialActiveYear?: number | null;
 }
+
+interface DashboardConfigItem {
+  id: string;
+  title: string;
+  type: 'small' | 'semiMedium' | 'medium' | 'semiLarge' | 'large';
+  isPercentage?: boolean;
+  isDrillDown?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  chartProps?: Record<string, any>;
+}
+
+const dashboardConfig: DashboardConfigItem[] = [
+  {
+    id: 'top5-mata-kuliah',
+    title: 'Top 5 Mata Kuliah (Praktisi)',
+    type: 'medium',
+    component: MyBarChart,
+    isDrillDown: true,
+    chartProps: {
+      layout: 'vertical',
+      dataKeys: ['value'],
+      indexBy: 'label',
+      axisBottomLegend: 'Mata Kuliah',
+      axisLeftLegend: 'Jumlah Pembelajaran',
+    },
+  },
+  {
+    id: 'distribusi-perusahaan-praktisi-mengajar',
+    title: 'Perusahaan Praktisi Pengajar',
+    type: 'medium',
+    component: MyPieChart,
+  },
+  {
+    id: 'distribusi-jabatan-dosen',
+    title: 'Jabatan Akademik Dosen Tetap',
+    type: 'medium',
+    component: MyBarChart,
+    isDrillDown: true,
+    chartProps: {
+      layout: 'vertical',
+      dataKeys: ['value'],
+      indexBy: 'label',
+      axisBottomLegend: 'Jabatan Akademik',
+      axisLeftLegend: 'Jumlah Dosen',
+    },
+  },
+  {
+    id: 'sertifikasi-profesi',
+    title: 'Sertifikasi Profesi Dosen Tetap',
+    type: 'medium',
+    component: MyBarChart,
+    chartProps: {
+      dataKeys: ['Bersertifikasi', 'Tidak Bersertifikasi'],
+      indexBy: 'academic_rank',
+      axisBottomLegend: 'Jabatan Akademik',
+      axisLeftLegend: 'Jumlah Dosen',
+    },
+  },
+] as const;
+
+type DashboardId = (typeof dashboardConfig)[number]['id'];
+
+const practitionerColumns: ColumnDef<DataTable>[] = [
+  {
+    accessorKey: 'practitioner_name',
+    header: ({ column }) => {
+      return (
+        <div className="text-left">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Nama Praktisi
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => (
+      <div className="text-left truncate">
+        {row.getValue('practitioner_name')}
+      </div>
+    ),
+    meta: {
+      displayName: 'Nama Praktisi',
+    },
+  },
+  {
+    accessorKey: 'profession',
+    header: ({ column }) => {
+      return (
+        <div className="text-center">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Profesi
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue('profession')}</div>
+    ),
+    meta: {
+      displayName: 'Profesi',
+    },
+  },
+  {
+    accessorKey: 'workplace',
+    header: ({ column }) => {
+      return (
+        <div className="text-center">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Perusahaan
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue('workplace')}</div>
+    ),
+    meta: {
+      displayName: 'Perusahaan',
+    },
+  },
+  {
+    accessorKey: 'teaching_date',
+    header: ({ column }) => {
+      return (
+        <div className="text-center">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Waktu Mengajar
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue('teaching_date')}</div>
+    ),
+    meta: {
+      displayName: 'Waktu Mengajar',
+    },
+  },
+];
 
 export function PraktisiMengajarUI({
   pageKey,
@@ -66,7 +254,33 @@ export function PraktisiMengajarUI({
     setActiveYear(pageKey, newYear === 'all' ? null : parseInt(newYear));
   };
 
-  const { infoAgregatPraktisi } = dashboardData;
+  const {
+    infoAgregatPraktisi,
+    distribusiJabatanDosen,
+    top5MataKuliah,
+    distribusiPerusahaan,
+    sertifikasiProfesi,
+  } = dashboardData;
+
+  // Drilldown mata kuliah oleh praktisi
+  const [selectedKodeMataKuliah, setSelectedKodeMataKuliah] = useState<
+    string | null
+  >(null);
+  const [selectedMataKuliah, setSelectedMataKuliah] = useState<string | null>(
+    null
+  );
+  const [dataPraktisi, setDataPraktisi] = useState<DataTable[] | null>(null);
+  const [isDrilldownPraktisiLoading, setIsDrilldownPraktisiLoading] =
+    useState(false);
+
+  // Drilldown jabatan akadmeik
+  const [activeJabatanAkademikData, setActiveJabatanAkademikData] =
+    useState(null);
+  const [jabatanAkademikBreadcrumbs, setJabatanAkademikBreadcrumbs] = useState([
+    { label: 'Jabatan Akademik', level: 0 },
+  ]);
+  const [isJabatanAkademikLoading, setIsJabatanAkademikLoading] =
+    useState(false);
 
   // Dashboard Settings
   const pageSettings = useDashboardSettingsStore(
@@ -82,6 +296,186 @@ export function PraktisiMengajarUI({
   const setPageShowLabels = useDashboardSettingsStore(
     (state) => state.setPageShowLabels
   );
+
+  // Drilldown Data Handling for Course
+  const handleDrilldownMataKuliah = useCallback(
+    async (barData: { data: { course_key: string }; indexValue: string }) => {
+      const kodeMataKuliah = barData.data.course_key;
+      const mataKuliah = normalizeTitleCase(barData.indexValue);
+
+      console.log(`Drill down mata kuliah : ${mataKuliah}`);
+
+      setSelectedKodeMataKuliah(kodeMataKuliah);
+      setSelectedMataKuliah(mataKuliah);
+      setIsDrilldownPraktisiLoading(true);
+      setDataPraktisi(null);
+
+      try {
+        const baseUrl = `/api/public/praktisi-mengajar/drilldown-top5-mata-kuliah?courseKey=${encodeURIComponent(
+          kodeMataKuliah
+        )}`;
+
+        const finalUrl = activeReportingYear
+          ? `${baseUrl}&year=${activeReportingYear}`
+          : baseUrl;
+
+        const response = await fetch(finalUrl);
+
+        if (!response.ok)
+          throw new Error(`Gagal fetch data praktisi untuk ${mataKuliah}`);
+
+        const result = await response.json();
+        setDataPraktisi(result.data);
+      } catch (error) {
+        console.error(error);
+        setDataPraktisi([]);
+      } finally {
+        setIsDrilldownPraktisiLoading(false);
+      }
+    },
+    [activeReportingYear]
+  );
+
+  // Drilldown Data Handling for Academic Rank
+  const handleDrilldownJabatanAkademik = useCallback(
+    async (barData: { indexValue: string; id: string }) => {
+      const rank = barData.indexValue;
+
+      if (jabatanAkademikBreadcrumbs.length > 1) return;
+
+      setIsJabatanAkademikLoading(true);
+      try {
+        const baseUrl = `/api/public/praktisi-mengajar/drilldown-jabatan-akademik?rank=${rank}`;
+        const finalUrl = activeReportingYear
+          ? `${baseUrl}&year=${activeReportingYear}`
+          : baseUrl;
+        const response = await fetch(finalUrl);
+
+        if (!response.ok) throw new Error('Gagal fetch data detail');
+
+        const result = await response.json();
+
+        setActiveJabatanAkademikData(result.data);
+        setJabatanAkademikBreadcrumbs((prev) => [
+          ...prev,
+          { label: `${rank}`, level: 1 },
+        ]);
+      } catch (error) {
+        console.error(error);
+        setActiveJabatanAkademikData(null);
+      } finally {
+        setIsJabatanAkademikLoading(false);
+      }
+    },
+    [activeReportingYear, jabatanAkademikBreadcrumbs]
+  );
+
+  const handleJabatanAkademikBreadcrumbClick = useCallback((level: number) => {
+    if (level === 0) {
+      setJabatanAkademikBreadcrumbs((prev) => prev.slice(0, 1));
+    }
+  }, []);
+
+  // Export drilldown
+  const handleExportDrilldownData = () => {
+    if (dataPraktisi && dataPraktisi.length > 0 && selectedKodeMataKuliah) {
+      const fileName = `Tempat Kerja Lulusan di ${selectedKodeMataKuliah}`;
+      exportAsXlsx(dataPraktisi, fileName);
+    }
+  };
+
+  // Chart Component
+  const chartChildren = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dataStateMap: Record<DashboardId, DataState<any>> = {
+      'distribusi-jabatan-dosen': distribusiJabatanDosen,
+      'top5-mata-kuliah': top5MataKuliah,
+      'distribusi-perusahaan-praktisi-mengajar': distribusiPerusahaan,
+      'sertifikasi-profesi': sertifikasiProfesi,
+    };
+
+    const dynamicDescription = `Data untuk tahun laporan ${activeReportingYear}`;
+
+    // eslint-disable-next-line prefer-const
+    let tempDashboardConfig = [...dashboardConfig];
+
+    if (jabatanAkademikBreadcrumbs.length > 1) {
+      const jabatanAkademikChartIndex = tempDashboardConfig.findIndex(
+        (config) => config.id === 'distribusi-jabatan-dosen'
+      );
+
+      if (jabatanAkademikChartIndex !== -1) {
+        tempDashboardConfig[jabatanAkademikChartIndex] = {
+          ...tempDashboardConfig[jabatanAkademikChartIndex],
+          title: `Jabatan Akademik Dosen Tetap`,
+          component: MyPieChart,
+          chartProps: {
+            breadcrumbs: jabatanAkademikBreadcrumbs,
+            onBreadcrumbClick: handleJabatanAkademikBreadcrumbClick,
+          },
+        };
+      }
+    }
+
+    if (jabatanAkademikBreadcrumbs.length > 1) {
+      dataStateMap['distribusi-jabatan-dosen'] = {
+        data: activeJabatanAkademikData,
+        isLoading: isJabatanAkademikLoading,
+        error: null,
+      };
+    }
+
+    return tempDashboardConfig.map((config) => {
+      const ChartComponent = config.component;
+      const chartState = dataStateMap[config.id];
+      const chartProps = { ...(config.chartProps ?? {}) };
+
+      if (config.id === 'distribusi-jabatan-dosen') {
+        chartProps.onClick = handleDrilldownJabatanAkademik;
+      }
+
+      if (config.id === 'top5-mata-kuliah') {
+        chartProps.onClick = handleDrilldownMataKuliah;
+      }
+
+      if (!chartState) return null;
+
+      return (
+        <ChartComponent
+          key={config.id}
+          title={config.title}
+          type={config.type as 'small' | 'medium' | 'large'}
+          isPercentage={config.isPercentage}
+          drillDown={config.isDrillDown}
+          description={dynamicDescription}
+          data={chartState.data || []}
+          isLoading={chartState.isLoading}
+          error={chartState.error}
+          pageKey={pageKey}
+          chartId={config.id}
+          colorScheme={theme}
+          enableLabel={showLabels}
+          enableArcLabels={showLabels}
+          {...chartProps}
+        />
+      );
+    });
+  }, [
+    distribusiJabatanDosen,
+    top5MataKuliah,
+    distribusiPerusahaan,
+    sertifikasiProfesi,
+    activeReportingYear,
+    jabatanAkademikBreadcrumbs,
+    handleJabatanAkademikBreadcrumbClick,
+    activeJabatanAkademikData,
+    isJabatanAkademikLoading,
+    pageKey,
+    theme,
+    showLabels,
+    handleDrilldownJabatanAkademik,
+    handleDrilldownMataKuliah,
+  ]);
 
   return (
     <DashboardProvider isPublicView={isPublicView}>
@@ -206,6 +600,27 @@ export function PraktisiMengajarUI({
                   </>
                 )}
               </div>
+              <div className="-mx-4">
+                <DashboardGridLayout pageKey={pageKey}>
+                  {chartChildren}
+                </DashboardGridLayout>
+              </div>
+              <DrilldownModal
+                isOpen={dataPraktisi !== null}
+                onClose={() => {
+                  setDataPraktisi(null);
+                  setSelectedKodeMataKuliah(null);
+                  setSelectedMataKuliah(null);
+                }}
+                title={`Praktisi Pengajar ${selectedMataKuliah}`}
+                description={`Berikut adalah daftar praktisi pengajar mata kuliah yang dipilih.`}
+                columns={practitionerColumns}
+                data={dataPraktisi}
+                isLoading={isDrilldownPraktisiLoading}
+                onExport={handleExportDrilldownData}
+                initialPageSize={5}
+                searchPlaceholder="Cari berdasarkan Nama [ / ]"
+              />
               {!isPublicView && (
                 <div className="flex flex-wrap gap-4">
                   {/* <ImportDialog type="lecturers" /> */}
