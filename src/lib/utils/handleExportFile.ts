@@ -1,25 +1,18 @@
 import { toPng } from 'html-to-image';
 import ExcelJS from 'exceljs';
 import { toast } from 'sonner';
+import { ColumnDef } from '@tanstack/react-table';
 
-/**
- * Membuat nama file yang aman dengan tambahan timestamp.
- * Contoh: 'grafik_lokasi_kerja_2025-06-13_15-45-00'
- * @param baseTitle Judul dasar untuk file, misal "Lokasi Bekerja"
- * @returns Nama file yang sudah diformat.
- */
 const formatFileName = (baseTitle: string): string => {
   const now = new Date();
 
   const year = now.getFullYear();
-  // getMonth() 0-indexed (Januari=0), jadi kita perlu tambah 1
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
 
-  // Gabungkan menjadi format yang kita inginkan (YYYY-MM-DD_HH-MM-SS)
   const localTimestamp = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
 
   const safeTitle = baseTitle.toLowerCase().replace(/ /g, '_');
@@ -27,11 +20,6 @@ const formatFileName = (baseTitle: string): string => {
   return `${safeTitle}_${localTimestamp}`;
 };
 
-/**
- * Mengekspor elemen HTML sebagai file PNG.
- * @param element Ref ke elemen HTML yang ingin diekspor.
- * @param title Judul dasar untuk nama file.
- */
 export const exportAsPng = (element: HTMLElement, title: string) => {
   toPng(element, { cacheBust: true })
     .then((dataUrl) => {
@@ -50,13 +38,8 @@ export const exportAsPng = (element: HTMLElement, title: string) => {
     });
 };
 
-/**
- * Mengekspor array data sebagai file XLSX.
- * @param data Array objek yang akan diekspor.
- * @param title Judul dasar untuk nama file.
- */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const exportAsXlsx = async (data: any[], title: string) => {
+export const exportAsXlsx = async (data: any[], title: string, columns?: ColumnDef<any>[]) => {
   if (!data || data.length === 0) {
     console.error('No data to export.');
     toast.error('Export failed', {
@@ -69,11 +52,27 @@ export const exportAsXlsx = async (data: any[], title: string) => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Data');
 
-    worksheet.columns = Object.keys(data[0]).map((key) => ({
-      header: key.charAt(0).toUpperCase() + key.slice(1),
-      key: key,
-      width: 25,
-    }));
+    if (columns && columns.length > 0) {
+      worksheet.columns = columns
+        .filter(
+          (col) =>
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (col as any).accessorKey && (col as any).meta?.displayName
+        )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((col: any) => ({
+          header: col.meta?.displayName || col.header || col.accessorKey,
+          key: col.accessorKey,
+          width: 30,
+        }));
+    }
+    else {
+      worksheet.columns = Object.keys(data[0]).map((key) => ({
+        header: key.charAt(0).toUpperCase() + key.slice(1),
+        key: key,
+        width: 25,
+      }));
+    }
 
     worksheet.addRows(data);
 

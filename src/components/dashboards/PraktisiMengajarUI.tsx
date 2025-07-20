@@ -1,6 +1,6 @@
 'use client';
 
-import BubbleChat from '@/components/forms/BubbleChat';
+// import BubbleChat from '@/components/forms/BubbleChat';
 import ImportDialog from '@/components/ImportDialog';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
@@ -18,7 +18,7 @@ import {
   User,
 } from 'lucide-react';
 import { MyPieChart } from '../charts/MyPieChart';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DashboardGridLayout } from '../DashboardGridLayout';
 import { MyBarChart } from '../charts/MyBarChart';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
@@ -61,7 +61,7 @@ interface InfoAgregatPraktisi {
 
 interface DashboardData {
   infoAgregatPraktisi: DataState<InfoAgregatPraktisi>;
-  distribusiJabatanDosen: DataState<ChartDataBar>;
+  distribusiJabatanDosen: DataState<ChartDataPie>;
   top5MataKuliah: DataState<ChartDataBar>;
   distribusiPerusahaan: DataState<ChartDataPie>;
   sertifikasiProfesi: DataState<ChartDataBar>;
@@ -111,15 +111,8 @@ const dashboardConfig: DashboardConfigItem[] = [
     id: 'distribusi-jabatan-dosen',
     title: 'Jabatan Akademik Dosen Tetap',
     type: 'medium',
-    component: MyBarChart,
+    component: MyPieChart,
     isDrillDown: true,
-    chartProps: {
-      layout: 'vertical',
-      dataKeys: ['value'],
-      indexBy: 'label',
-      axisBottomLegend: 'Jabatan Akademik',
-      axisLeftLegend: 'Jumlah Dosen',
-    },
   },
   {
     id: 'sertifikasi-profesi',
@@ -127,6 +120,7 @@ const dashboardConfig: DashboardConfigItem[] = [
     type: 'medium',
     component: MyBarChart,
     chartProps: {
+      grouped: 'stacked',
       dataKeys: ['Bersertifikasi', 'Tidak Bersertifikasi'],
       indexBy: 'academic_rank',
       axisBottomLegend: 'Jabatan Akademik',
@@ -263,9 +257,6 @@ export function PraktisiMengajarUI({
   } = dashboardData;
 
   // Drilldown mata kuliah oleh praktisi
-  const [selectedKodeMataKuliah, setSelectedKodeMataKuliah] = useState<
-    string | null
-  >(null);
   const [selectedMataKuliah, setSelectedMataKuliah] = useState<string | null>(
     null
   );
@@ -274,8 +265,9 @@ export function PraktisiMengajarUI({
     useState(false);
 
   // Drilldown jabatan akadmeik
-  const [activeJabatanAkademikData, setActiveJabatanAkademikData] =
-    useState(null);
+  const [activeJabatanAkademikData, setActiveJabatanAkademikData] = useState(
+    distribusiJabatanDosen.data || []
+  );
   const [jabatanAkademikBreadcrumbs, setJabatanAkademikBreadcrumbs] = useState([
     { label: 'Jabatan Akademik', level: 0 },
   ]);
@@ -305,7 +297,6 @@ export function PraktisiMengajarUI({
 
       console.log(`Drill down mata kuliah : ${mataKuliah}`);
 
-      setSelectedKodeMataKuliah(kodeMataKuliah);
       setSelectedMataKuliah(mataKuliah);
       setIsDrilldownPraktisiLoading(true);
       setDataPraktisi(null);
@@ -337,13 +328,20 @@ export function PraktisiMengajarUI({
   );
 
   // Drilldown Data Handling for Academic Rank
-  const handleDrilldownJabatanAkademik = useCallback(
-    async (barData: { indexValue: string; id: string }) => {
-      const rank = barData.indexValue;
+  useEffect(() => {
+    if (jabatanAkademikBreadcrumbs.length === 1) {
+      setActiveJabatanAkademikData(distribusiJabatanDosen.data || []);
+    }
+  }, [distribusiJabatanDosen.data, jabatanAkademikBreadcrumbs]);
 
+  // Drilldown Data Handling for Academic Rank
+  const handleDrilldownJabatanAkademik = useCallback(
+    async (pieData: { id: string; label: string }) => {
       if (jabatanAkademikBreadcrumbs.length > 1) return;
 
+      const rank = pieData.label;
       setIsJabatanAkademikLoading(true);
+
       try {
         const baseUrl = `/api/public/praktisi-mengajar/drilldown-jabatan-akademik?rank=${rank}`;
         const finalUrl = activeReportingYear
@@ -362,7 +360,7 @@ export function PraktisiMengajarUI({
         ]);
       } catch (error) {
         console.error(error);
-        setActiveJabatanAkademikData(null);
+        setActiveJabatanAkademikData([]);
       } finally {
         setIsJabatanAkademikLoading(false);
       }
@@ -370,17 +368,21 @@ export function PraktisiMengajarUI({
     [activeReportingYear, jabatanAkademikBreadcrumbs]
   );
 
-  const handleJabatanAkademikBreadcrumbClick = useCallback((level: number) => {
-    if (level === 0) {
-      setJabatanAkademikBreadcrumbs((prev) => prev.slice(0, 1));
-    }
-  }, []);
+  const handleJabatanAkademikBreadcrumbClick = useCallback(
+    (level: number) => {
+      if (level === 0) {
+        setActiveJabatanAkademikData(distribusiJabatanDosen.data || []);
+        setJabatanAkademikBreadcrumbs((prev) => prev.slice(0, 1));
+      }
+    },
+    [distribusiJabatanDosen.data]
+  );
 
   // Export drilldown
   const handleExportDrilldownData = () => {
-    if (dataPraktisi && dataPraktisi.length > 0 && selectedKodeMataKuliah) {
-      const fileName = `Tempat Kerja Lulusan di ${selectedKodeMataKuliah}`;
-      exportAsXlsx(dataPraktisi, fileName);
+    if (dataPraktisi && dataPraktisi.length > 0 && selectedMataKuliah) {
+      const fileName = `Praktisi mengajar mata kuliah ${selectedMataKuliah}`;
+      exportAsXlsx(dataPraktisi, fileName, practitionerColumns);
     }
   };
 
@@ -394,29 +396,6 @@ export function PraktisiMengajarUI({
       'sertifikasi-profesi': sertifikasiProfesi,
     };
 
-    const dynamicDescription = `Data untuk tahun laporan ${activeReportingYear}`;
-
-    // eslint-disable-next-line prefer-const
-    let tempDashboardConfig = [...dashboardConfig];
-
-    if (jabatanAkademikBreadcrumbs.length > 1) {
-      const jabatanAkademikChartIndex = tempDashboardConfig.findIndex(
-        (config) => config.id === 'distribusi-jabatan-dosen'
-      );
-
-      if (jabatanAkademikChartIndex !== -1) {
-        tempDashboardConfig[jabatanAkademikChartIndex] = {
-          ...tempDashboardConfig[jabatanAkademikChartIndex],
-          title: `Jabatan Akademik Dosen Tetap`,
-          component: MyPieChart,
-          chartProps: {
-            breadcrumbs: jabatanAkademikBreadcrumbs,
-            onBreadcrumbClick: handleJabatanAkademikBreadcrumbClick,
-          },
-        };
-      }
-    }
-
     if (jabatanAkademikBreadcrumbs.length > 1) {
       dataStateMap['distribusi-jabatan-dosen'] = {
         data: activeJabatanAkademikData,
@@ -425,13 +404,17 @@ export function PraktisiMengajarUI({
       };
     }
 
-    return tempDashboardConfig.map((config) => {
+    const dynamicDescription = `Data untuk tahun laporan ${activeReportingYear}`;
+
+    return dashboardConfig.map((config) => {
       const ChartComponent = config.component;
       const chartState = dataStateMap[config.id];
       const chartProps = { ...(config.chartProps ?? {}) };
 
       if (config.id === 'distribusi-jabatan-dosen') {
         chartProps.onClick = handleDrilldownJabatanAkademik;
+        chartProps.breadcrumbs = jabatanAkademikBreadcrumbs;
+        chartProps.onBreadcrumbClick = handleJabatanAkademikBreadcrumbClick;
       }
 
       if (config.id === 'top5-mata-kuliah') {
@@ -465,15 +448,15 @@ export function PraktisiMengajarUI({
     top5MataKuliah,
     distribusiPerusahaan,
     sertifikasiProfesi,
-    activeReportingYear,
     jabatanAkademikBreadcrumbs,
-    handleJabatanAkademikBreadcrumbClick,
+    activeReportingYear,
     activeJabatanAkademikData,
     isJabatanAkademikLoading,
     pageKey,
     theme,
     showLabels,
     handleDrilldownJabatanAkademik,
+    handleJabatanAkademikBreadcrumbClick,
     handleDrilldownMataKuliah,
   ]);
 
@@ -609,11 +592,10 @@ export function PraktisiMengajarUI({
                 isOpen={dataPraktisi !== null}
                 onClose={() => {
                   setDataPraktisi(null);
-                  setSelectedKodeMataKuliah(null);
                   setSelectedMataKuliah(null);
                 }}
-                title={`Praktisi Pengajar ${selectedMataKuliah}`}
-                description={`Berikut adalah daftar praktisi pengajar mata kuliah yang dipilih.`}
+                title={`Daftar Praktisi Pengajar`}
+                description={`Berikut adalah daftar praktisi pengajar mata kuliah ${selectedMataKuliah}.`}
                 columns={practitionerColumns}
                 data={dataPraktisi}
                 isLoading={isDrilldownPraktisiLoading}
@@ -631,7 +613,7 @@ export function PraktisiMengajarUI({
             </div>
           </div>
         </div>
-        {!isPublicView && <BubbleChat />}
+        {/* {!isPublicView && <BubbleChat />} */}
       </>
     </DashboardProvider>
   );

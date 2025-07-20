@@ -1,6 +1,6 @@
 'use client';
 
-import BubbleChat from '@/components/forms/BubbleChat';
+// import BubbleChat from '@/components/forms/BubbleChat';
 import ImportDialog from '@/components/ImportDialog';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
@@ -22,10 +22,10 @@ interface DataState<T> {
   error: any;
 }
 
-// interface ChartDataBar {
-//   label: string;
-//   value: number;
-// }
+interface ChartDataBar {
+  label: string;
+  value: number;
+}
 
 interface ChartDataPie {
   id: string;
@@ -52,6 +52,7 @@ interface DashboardData {
   distribusiTingkatPublikasi: DataState<ChartDataPie>;
   trenPublikasiPerTahun: DataState<ChartDataLine>;
   trenSitasiPerDosen: DataState<ChartDataLine>;
+  top5DosenPublikasi: DataState<ChartDataBar>;
 }
 
 interface KaryaDosenTerdampakUIProps {
@@ -76,7 +77,7 @@ interface DashboardConfigItem {
 const dashboardConfig: DashboardConfigItem[] = [
   {
     id: 'distribusi-tingkat-publikasi',
-    title: 'Distribusi Tingkat Publikasi',
+    title: 'Proporsi Tingkat Publikasi',
     type: 'medium',
     isPercentage: true,
     isDrillDown: true,
@@ -84,7 +85,7 @@ const dashboardConfig: DashboardConfigItem[] = [
   },
   {
     id: 'tren-publikasi-per-tahun',
-    title: 'Tren Publikasi Per Tahun',
+    title: 'Tren Publikasi Dosen',
     type: 'medium',
     component: MyLineChart,
     chartProps: {
@@ -94,12 +95,25 @@ const dashboardConfig: DashboardConfigItem[] = [
   },
   {
     id: 'tren-sitasi-per-dosen',
-    title: 'Top 5 Jumlah Sitasi Per Tahun',
-    type: 'full',
+    title: 'Top 5 Dosen Sitasi Terbanyak',
+    type: 'medium',
     component: MyLineChart,
     chartProps: {
       axisLeftLegend: 'Jumlah Sitasi',
       axisBottomLegend: 'Tahun',
+    },
+  },
+  {
+    id: 'top5-dosen-publikasi',
+    title: 'Top 5 Dosen Melakukan Publikasi',
+    type: 'medium',
+    component: MyBarChart,
+    chartProps: {
+      layout: 'horizontal',
+      grouped: 'stacked',
+      indexBy: 'lecturer_name',
+      axisBottomLegend: 'Nama Dosen',
+      axisLeftLegend: 'Jumlah Publikasi',
     },
   },
 ] as const;
@@ -135,6 +149,7 @@ export function KaryaDosenTerdampakUI({
     distribusiTingkatPublikasi,
     trenPublikasiPerTahun,
     trenSitasiPerDosen,
+    top5DosenPublikasi,
   } = dashboardData;
 
   // Drilldown tingkat publikasi
@@ -207,6 +222,7 @@ export function KaryaDosenTerdampakUI({
       'distribusi-tingkat-publikasi': distribusiTingkatPublikasi,
       'tren-publikasi-per-tahun': trenPublikasiPerTahun,
       'tren-sitasi-per-dosen': trenSitasiPerDosen,
+      'top5-dosen-publikasi': top5DosenPublikasi,
     };
 
     const dynamicDescription = `Data untuk tahun laporan ${activeReportingYear}`;
@@ -222,7 +238,7 @@ export function KaryaDosenTerdampakUI({
       if (tingkatPublikasiChartIndex !== -1) {
         tempDashboardConfig[tingkatPublikasiChartIndex] = {
           ...tempDashboardConfig[tingkatPublikasiChartIndex],
-          title: `Distribusi Tingkat Publikasi`,
+          title: `Proporsi Tingkat Publikasi`,
           component: MyBarChart,
           chartProps: {
             layout: 'vertical',
@@ -248,10 +264,19 @@ export function KaryaDosenTerdampakUI({
     return tempDashboardConfig.map((config) => {
       const ChartComponent = config.component;
       const chartState = dataStateMap[config.id];
-      const chartProps = { ...(config.chartProps ?? {}) };
+      // eslint-disable-next-line prefer-const
+      let chartProps = { ...(config.chartProps ?? {}) };
 
       if (config.id === 'distribusi-tingkat-publikasi') {
         chartProps.onClick = handleDrilldownTingkatPublikasi;
+      }
+
+      if (config.id === 'top5-dosen-publikasi' && activeReportingYear) {
+        chartProps.dataKeys = [
+          (activeReportingYear - 2).toString(),
+          (activeReportingYear - 1).toString(),
+          activeReportingYear.toString(),
+        ];
       }
 
       if (!chartState) return null;
@@ -280,6 +305,7 @@ export function KaryaDosenTerdampakUI({
     distribusiTingkatPublikasi,
     trenPublikasiPerTahun,
     trenSitasiPerDosen,
+    top5DosenPublikasi,
     activeReportingYear,
     tingkatPublikasiBreadcrumbs,
     handleTingkatPublikasiBreadcrumbClick,
@@ -412,7 +438,7 @@ export function KaryaDosenTerdampakUI({
             </div>
           </div>
         </div>
-        {!isPublicView && <BubbleChat />}
+        {/* {!isPublicView && <BubbleChat />} */}
       </>
     </DashboardProvider>
   );

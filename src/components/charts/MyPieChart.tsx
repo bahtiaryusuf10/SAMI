@@ -140,7 +140,7 @@ export const MyPieChart = ({
             {drillDown && (
               <Tooltip>
                 <TooltipTrigger>
-                  <Info className="w-4 h-4 text-blue-300" />
+                  <Info className="w-5 h-5 text-blue-300" />
                 </TooltipTrigger>
                 <TooltipContent side="right" align="center" sideOffset={-2}>
                   <p>Drill down data</p>

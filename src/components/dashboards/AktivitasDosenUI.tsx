@@ -1,6 +1,6 @@
 'use client';
 
-import BubbleChat from '@/components/forms/BubbleChat';
+// import BubbleChat from '@/components/forms/BubbleChat';
 import ImportDialog from '@/components/ImportDialog';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
@@ -24,6 +24,8 @@ import { Button } from '../ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
 import { DrilldownModal } from '../Modal/DrilldownModal';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Badge } from '../ui/badge';
 
 interface DataState<T> {
   data: T | null;
@@ -116,7 +118,7 @@ const dashboardConfig: DashboardConfigItem[] = [
   },
   {
     id: 'distribusi-aktivitas-dosen',
-    title: 'Distribusi Aktivitas Dosen',
+    title: 'Proporsi Aktivitas Dosen',
     type: 'medium',
     component: MyPieChart,
   },
@@ -175,12 +177,51 @@ const fundSourceColumns: ColumnDef<DataTable>[] = [
       );
     },
     cell: ({ row }) => {
+      const authorsString = row.getValue('authors') as string;
+      const authorsArray = authorsString ? authorsString.split('\n') : [];
+      const MAX_VISIBLE = 2;
+
+      if (authorsArray.length <= MAX_VISIBLE) {
+        return (
+          <div className="flex flex-wrap gap-1">
+            {authorsArray.map((lecturer, index) => (
+              <Badge key={index} variant="secondary">
+                {lecturer}
+              </Badge>
+            ))}
+          </div>
+        );
+      }
+
+      const visibleAuthors = authorsArray.slice(0, MAX_VISIBLE);
+      const hiddenCount = authorsArray.length - MAX_VISIBLE;
+
       return (
-        <div
-          className="text-center whitespace-normal break-words line-clamp-3"
-          title={row.getValue('authors')}
-        >
-          {row.getValue('authors')}
+        <div className="flex flex-wrap items-center gap-1">
+          {visibleAuthors.map((lecturer, index) => (
+            <Badge key={index} variant="secondary">
+              {lecturer}
+            </Badge>
+          ))}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Badge
+                variant="default"
+                className="cursor-pointer bg-blue-300 hover:bg-blue-200"
+              >
+                + {hiddenCount} lainnya
+              </Badge>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2">
+              <div className="flex flex-col gap-1">
+                {authorsArray.map((lecturer, index) => (
+                  <div key={index} className="text-sm p-1">
+                    {lecturer}
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       );
     },
@@ -466,12 +507,12 @@ export function AktivitasDosenUI({
       dataPenelitianPkm.length > 0 &&
       selectedSumberDana
     ) {
-      const fileName = `Penelitian & pengabdian Sumber Dana ${selectedSumberDana}`;
-      exportAsXlsx(dataPenelitianPkm, fileName);
+      const fileName = `Penelitian & PkM Sumber ${selectedSumberDana}`;
+      exportAsXlsx(dataPenelitianPkm, fileName, fundSourceColumns);
     }
-    if (dataDosen && dataDosen.length > 0 && selectedSumberDana) {
-      const fileName = `Dosen ${selectedSumberDana}`;
-      exportAsXlsx(dataDosen, fileName);
+    if (dataDosen && dataDosen.length > 0 && selectedTipeAktivitas) {
+      const fileName = `Dosen ${selectedTipeAktivitas}`;
+      exportAsXlsx(dataDosen, fileName, externalActivityColumns);
     }
   };
 
@@ -655,9 +696,8 @@ export function AktivitasDosenUI({
                   setDataPenelitianPkm(null);
                   setSelectedSumberDana(null);
                 }}
-                title={`Sumber ${selectedSumberDana}`}
-                description={`Berikut adalah daftar penelitian & pengabdian untuk
-                          kategori ${selectedSumberDana}.`}
+                title={`Daftar Penelitian & Pengabdian`}
+                description={`Berikut adalah daftar penelitian & pengabdian untuk sumber ${selectedSumberDana}.`}
                 columns={fundSourceColumns}
                 data={dataPenelitianPkm}
                 isLoading={isDrilldownPenelitianPkmLoading}
@@ -671,8 +711,8 @@ export function AktivitasDosenUI({
                   setDataDosen(null);
                   setSelectedTipeAktivitas(null);
                 }}
-                title={`Aktivitas ${selectedTipeAktivitas}`}
-                description={`Berikut adalah daftar dosen ${selectedTipeAktivitas}.`}
+                title={`Daftar Dosen Beraktivitas`}
+                description={`Berikut adalah daftar dosen yang melakukan aktivitas ${selectedTipeAktivitas}.`}
                 columns={externalActivityColumns}
                 data={dataDosen}
                 isLoading={isDrilldownDosenLoading}
@@ -690,7 +730,7 @@ export function AktivitasDosenUI({
             </div>
           </div>
         </div>
-        {!isPublicView && <BubbleChat />}
+        {/* {!isPublicView && <BubbleChat />} */}
       </>
     </DashboardProvider>
   );

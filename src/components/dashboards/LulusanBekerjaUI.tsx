@@ -1,11 +1,11 @@
 'use client';
 
-import { useMemo, useState, useCallback, JSX, useEffect } from 'react';
+import { useMemo, useState, useCallback, JSX } from 'react';
 import { MyBarChart } from '@/components/charts/MyBarChart';
 import { MyPieChart } from '@/components/charts/MyPieChart';
 import { MySingleValueChart } from '@/components/charts/MySingleValueChart';
 import { DashboardGridLayout } from '@/components/DashboardGridLayout';
-import BubbleChat from '@/components/forms/BubbleChat';
+// import BubbleChat from '@/components/forms/BubbleChat';
 import ImportDialog from '@/components/ImportDialog';
 import { Button } from '@/components/ui/button';
 import {
@@ -56,11 +56,10 @@ interface InfoAgregatLulusan {
 
 interface DashboardData {
   infoAgregatLulusan: DataState<InfoAgregatLulusan>;
-  // persentaseStatusLulusan: DataState<PersentaseStatusLulusan>;
   lokasiBekerja: DataState<ChartDataBar>;
   statusLulusan: DataState<ChartDataPie>;
   waktuTungguBekerja: DataState<ChartDataPie>;
-  rentangPenghasilan: DataState<ChartDataPie>;
+  rentangPenghasilan: DataState<ChartDataBar>;
 }
 
 interface LulusanBekerjaUIProps {
@@ -73,7 +72,7 @@ interface LulusanBekerjaUIProps {
 interface DashboardConfigItem {
   id: string;
   title: string;
-  type: 'small' | 'medium' | 'large';
+  type: 'small' | 'semiMedium' | 'medium' | 'semiLarge' | 'large';
   isPercentage?: boolean;
   isDrillDown?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -86,7 +85,7 @@ const dashboardConfig: DashboardConfigItem[] = [
   {
     id: 'lokasi-bekerja',
     title: 'Lokasi Bekerja',
-    type: 'large',
+    type: 'semiLarge',
     isDrillDown: true,
     component: MyBarChart,
     chartProps: {
@@ -99,7 +98,7 @@ const dashboardConfig: DashboardConfigItem[] = [
   {
     id: 'status-lulusan',
     title: 'Status Lulusan',
-    type: 'small',
+    type: 'semiMedium',
     isPercentage: true,
     component: MyPieChart,
   },
@@ -108,7 +107,14 @@ const dashboardConfig: DashboardConfigItem[] = [
     title: 'Rentang Penghasilan',
     type: 'medium',
     isDrillDown: true,
-    component: MyPieChart,
+    component: MyBarChart,
+    chartProps: {
+      layout: 'horizontal',
+      dataKeys: ['value'],
+      indexBy: 'label',
+      axisBottomLegend: 'Rentang Penghasilan',
+      axisLeftLegend: 'Jumlah Lulusan',
+    },
   },
   {
     id: 'waktu-tunggu-bekerja',
@@ -213,9 +219,7 @@ export function LulusanBekerjaUI({
     useState(false);
 
   // Drilldown penghasilan
-  const [activePenghasilanData, setActivePenghasilanData] = useState(
-    rentangPenghasilan.data || []
-  );
+  const [activePenghasilanData, setActivePenghasilanData] = useState(null);
   const [penghasilanBreadcrumbs, setPenghasilanBreadcrumbs] = useState([
     { label: 'Rentang Penghasilan', level: 0 },
   ]);
@@ -276,17 +280,12 @@ export function LulusanBekerjaUI({
   );
 
   // Drilldown Data Handling for Income
-  useEffect(() => {
-    if (penghasilanBreadcrumbs.length === 1) {
-      setActivePenghasilanData(rentangPenghasilan.data || []);
-    }
-  }, [rentangPenghasilan.data, penghasilanBreadcrumbs]);
-
   const handleDrilldownPenghasilan = useCallback(
-    async (pieData: { id: string; label: string }) => {
+    async (barData: { indexValue: string; id: string }) => {
+      const kategoriPenghasilan = barData.indexValue;
+
       if (penghasilanBreadcrumbs.length > 1) return;
 
-      const kategoriPenghasilan = pieData.label;
       setIsPenghasilanLoading(true);
 
       try {
@@ -324,7 +323,7 @@ export function LulusanBekerjaUI({
         ]);
       } catch (error) {
         console.error(error);
-        setActivePenghasilanData([]);
+        setActivePenghasilanData(null);
       } finally {
         setIsPenghasilanLoading(false);
       }
@@ -332,15 +331,11 @@ export function LulusanBekerjaUI({
     [activeReportingYear, penghasilanBreadcrumbs]
   );
 
-  const handlePenghasilanBreadcrumbClick = useCallback(
-    (level: number) => {
-      if (level === 0) {
-        setActivePenghasilanData(rentangPenghasilan.data || []);
-        setPenghasilanBreadcrumbs((prev) => prev.slice(0, 1));
-      }
-    },
-    [rentangPenghasilan.data]
-  );
+  const handlePenghasilanBreadcrumbClick = useCallback((level: number) => {
+    if (level === 0) {
+      setPenghasilanBreadcrumbs((prev) => prev.slice(0, 1));
+    }
+  }, []);
 
   // Export drilldown
   const handleExportDrilldownData = () => {
@@ -350,7 +345,7 @@ export function LulusanBekerjaUI({
       selectedLokasiBekerja
     ) {
       const fileName = `Tempat Kerja Lulusan di ${selectedLokasiBekerja}`;
-      exportAsXlsx(dataTempatBekerja, fileName);
+      exportAsXlsx(dataTempatBekerja, fileName, workplaceColumns);
     }
   };
 
@@ -364,6 +359,31 @@ export function LulusanBekerjaUI({
       'waktu-tunggu-bekerja': waktuTungguBekerja,
     };
 
+    const dynamicDescription = activeReportingYear
+      ? `Data untuk lulusan tahun ${activeReportingYear}`
+      : 'Data untuk semua tahun kelulusan';
+
+    // eslint-disable-next-line prefer-const
+    let tempDashboardConfig = [...dashboardConfig];
+
+    if (penghasilanBreadcrumbs.length > 1) {
+      const penghasilanChartIndex = tempDashboardConfig.findIndex(
+        (config) => config.id === 'rentang-penghasilan'
+      );
+
+      if (penghasilanChartIndex !== -1) {
+        tempDashboardConfig[penghasilanChartIndex] = {
+          ...tempDashboardConfig[penghasilanChartIndex],
+          title: `Rentang Penghasilan`,
+          component: MyPieChart,
+          chartProps: {
+            breadcrumbs: penghasilanBreadcrumbs,
+            onBreadcrumbClick: handlePenghasilanBreadcrumbClick,
+          },
+        };
+      }
+    }
+
     if (penghasilanBreadcrumbs.length > 1) {
       dataStateMap['rentang-penghasilan'] = {
         data: activePenghasilanData,
@@ -372,11 +392,7 @@ export function LulusanBekerjaUI({
       };
     }
 
-    const dynamicDescription = activeReportingYear
-      ? `Data untuk lulusan tahun ${activeReportingYear}`
-      : 'Data untuk semua tahun kelulusan';
-
-    return dashboardConfig.map((config) => {
+    return tempDashboardConfig.map((config) => {
       const ChartComponent = config.component;
       const chartState = dataStateMap[config.id];
       const chartProps = { ...(config.chartProps ?? {}) };
@@ -387,8 +403,6 @@ export function LulusanBekerjaUI({
 
       if (config.id === 'rentang-penghasilan') {
         chartProps.onClick = handleDrilldownPenghasilan;
-        chartProps.breadcrumbs = penghasilanBreadcrumbs;
-        chartProps.onBreadcrumbClick = handlePenghasilanBreadcrumbClick;
       }
 
       if (!chartState) return null;
@@ -563,7 +577,7 @@ export function LulusanBekerjaUI({
             </div>
           </div>
         </div>
-        {!isPublicView && <BubbleChat />}
+        {/* {!isPublicView && <BubbleChat />} */}
       </>
     </DashboardProvider>
   );

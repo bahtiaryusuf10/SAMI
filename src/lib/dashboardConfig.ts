@@ -7,8 +7,6 @@ import { transformLulusanBekerjaData } from '@/lib/transformers/transformLulusan
 import { getStandarInternasionalDashboardData } from '@/lib/data/getStandarInternasionalData';
 import { transformStandarInternasionalData } from '@/lib/transformers/transformStandarInternasionalData';
 import { StandarInternasionalUI } from '@/components/dashboards/StandarInternasionalUI';
-// import { KelasKolaboratifUI } from '@/components/dashboards/KelasKolaboratifUI';
-// import { KerjaSamaGlobalUI } from '@/components/dashboards/KerjaSamaGlobalUI';
 import { AktivitasDosenUI } from '@/components/dashboards/AktivitasDosenUI';
 import { KaryaDosenTerdampakUI } from '@/components/dashboards/KaryaDosenTerdampakUI';
 import { PraktisiMengajarUI } from '@/components/dashboards/PraktisiMengajarUI';
@@ -18,6 +16,12 @@ import { getPraktisiMengajarDashboardData } from './data/getPraktisiMengajarDash
 import { transformPraktisiMengajarData } from './transformers/transformPraktisiMengajarData';
 import { getKaryaDosenTerdampakDashboardData } from './data/getKaryaDosenTerdampakDashboardData';
 import { transformKaryaDosenTerdampakData } from './transformers/transformKaryaDosenTerdampakData';
+import { getKerjaSamaGlobalDashboardData } from './data/getKerjaSamaGlobalDashboardData';
+import { transformKerjaSamaGlobalData } from './transformers/transformKerjaSamaGlobalData';
+import { KerjaSamaGlobalUI } from '@/components/dashboards/KerjaSamaGlobalUI';
+import { getKelasKolaboratifDashboardData } from './data/getKelasKolaboratifDashboardData';
+import { transformKelasKolaboratifData } from './transformers/transformKelasKolaboratifData';
+import { KelasKolaboratifUI } from '@/components/dashboards/KelasKolaboratifUI';
 
 
 export const dashboardComponents = {
@@ -46,16 +50,16 @@ export const dashboardComponents = {
     transformData: transformKaryaDosenTerdampakData,
     component: KaryaDosenTerdampakUI,
   },
-  // 'kerja-sama-global': {
-  //   fetchData: getKerjaSamaGlobalDashboardData,
-  //   transformData: transformKerjaSamaGlobalData,
-  //   component: KerjaSamaGlobalUI,
-  // },
-  // 'kelas-kolaboratif': {
-  //   fetchData: getKelasKolaboratifDashboardData,
-  //   transformData: transformKelasKolaboratifData,
-  //   component: KelasKolaboratifUI,
-  // },
+  'kerja-sama-global': {
+    fetchData: getKerjaSamaGlobalDashboardData,
+    transformData: transformKerjaSamaGlobalData,
+    component: KerjaSamaGlobalUI,
+  },
+  'kelas-kolaboratif': {
+    fetchData: getKelasKolaboratifDashboardData,
+    transformData: transformKelasKolaboratifData,
+    component: KelasKolaboratifUI,
+  },
   'standar-internasional': {
     fetchData: getStandarInternasionalDashboardData,
     transformData: transformStandarInternasionalData,

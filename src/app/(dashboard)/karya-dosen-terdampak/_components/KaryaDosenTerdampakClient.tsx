@@ -83,6 +83,19 @@ export default function KaryaDosenTerdampakClient({
     dedupingInterval: 10000,
   });
 
+  const apiUrlTop5DosenPublikasi = `/api/karya-dosen-terdampak/top5-dosen-publikasi-per-tahun?year=${
+    activeReportingYear || ''
+  }`;
+  const {
+    data: resultTop5DosenPublikasi,
+    error: errorTop5DosenPublikasi,
+    isLoading: isLoadingTop5DosenPublikasi,
+  } = useSWR(apiUrlTop5DosenPublikasi, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 10000,
+  });
+
   const dashboardData = {
     infoAgregatKaryaDosen: {
       data: resultInfoAgregatKaryaDosen?.data,
@@ -103,6 +116,11 @@ export default function KaryaDosenTerdampakClient({
       data: resultTrenSitasiPerDosen?.data,
       isLoading: isLoadingTrenSitasiPerDosen,
       error: errorTrenSitasiPerDosen,
+    },
+    top5DosenPublikasi: {
+      data: resultTop5DosenPublikasi?.data,
+      isLoading: isLoadingTop5DosenPublikasi,
+      error: errorTop5DosenPublikasi,
     },
   };
 

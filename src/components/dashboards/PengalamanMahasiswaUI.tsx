@@ -1,6 +1,6 @@
 'use client';
 
-import BubbleChat from '@/components/forms/BubbleChat';
+// import BubbleChat from '@/components/forms/BubbleChat';
 import ImportDialog from '@/components/ImportDialog';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
@@ -131,7 +131,7 @@ const dashboardConfig: DashboardConfigItem[] = [
   },
   {
     id: 'distribusi-mbkm',
-    title: 'Distribusi Kategori MBKM',
+    title: 'Proporsi Kategori MBKM',
     type: 'medium',
     isPercentage: true,
     component: MyPieChart,
@@ -315,8 +315,8 @@ export function PengalamanMahasiswaUI({
       selectedKategori &&
       selectedLevel
     ) {
-      const fileName = `Prestasi kategori ${selectedKategori} dan tingkat ${selectedLevel}`;
-      exportAsXlsx(dataPrestasi, fileName);
+      const fileName = `Prestasi kategori ${selectedKategori} di tingkat ${selectedLevel}`;
+      exportAsXlsx(dataPrestasi, fileName, achievementColumns);
     }
   };
 
@@ -492,9 +492,8 @@ export function PengalamanMahasiswaUI({
                   setSelectedKategori(null);
                   setSelectedLevel(null);
                 }}
-                title={` Prestasi kategori ${selectedKategori} di tingkat ${' '}
-                          ${selectedLevel}`}
-                description={`Berikut adalah daftar prestasi untuk kategori ${selectedKategori} di tingkat ${selectedLevel}.`}
+                title={`Daftar Capaian Prestasi`}
+                description={`Berikut adalah daftar capaian prestasi untuk kategori ${selectedKategori} di tingkat ${selectedLevel}.`}
                 columns={achievementColumns}
                 data={dataPrestasi}
                 isLoading={isDrilldownPrestasiLoading}
@@ -513,7 +512,7 @@ export function PengalamanMahasiswaUI({
             </div>
           </div>
         </div>
-        {!isPublicView && <BubbleChat />}
+        {/* {!isPublicView && <BubbleChat />} */}
       </>
     </DashboardProvider>
   );

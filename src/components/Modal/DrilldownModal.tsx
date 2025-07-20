@@ -45,10 +45,12 @@ export function DrilldownModal<TData>({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <div className="flex items-center justify-between pr-8">
-            <div className="flex flex-col gap-2">
-              <DialogTitle className="text-black">{title}</DialogTitle>
-              <DialogDescription className="text-gray-400">
+          <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-5 sm:gap-4 md:gap-6 lg:gap-8">
+            <div className="flex flex-col gap-2 min-w-0">
+              <DialogTitle className="text-black text-left">
+                {title}
+              </DialogTitle>
+              <DialogDescription className="text-gray-400 text-left md:w-[620px]">
                 {description}
               </DialogDescription>
             </div>
