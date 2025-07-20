@@ -209,12 +209,12 @@ export function MyDataTableMaster<TData>({
           </Table>
         </div>
 
-        <div className="flex items-center py-4">
-          <div className="flex-shrink-0 text-sm text-gray-400">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 py-4">
+          <div className="text-sm text-gray-400 w-full sm:w-auto">
             Halaman {table.getState().pagination.pageIndex + 1} dari{' '}
             {table.getPageCount()}
           </div>
-          <div className="flex-grow"></div>
+          <div className="flex-grow hidden sm:block"></div>
           <div className="flex items-center justify-end space-x-2">
             <Button
               size="sm"

@@ -1,9 +1,19 @@
+import { useEffect, useState } from 'react';
+
 interface PdfViewerProps {
   url: string | null | undefined;
   title: string;
 }
 
 export function PdfViewer({ url, title }: PdfViewerProps) {
+  const [showFallback, setShowFallback] = useState(false);
+
+  useEffect(() => {
+    if (navigator.pdfViewerEnabled === false) {
+      setShowFallback(true);
+    }
+  }, []);
+
   if (!url) {
     return (
       <div className="w-full h-full border rounded-lg flex items-center justify-center bg-gray-50 text-gray-500">
@@ -20,8 +30,22 @@ export function PdfViewer({ url, title }: PdfViewerProps) {
         className="w-full h-[500px] border rounded-lg mb-5"
         title={title}
       >
-        Browser Anda tidak mendukung iframe, silakan unduh dokumen{' '}
-        <a href={url}>di sini</a>.
+        {showFallback && (
+          <p className="p-4 text-center text-black">
+            Browser Anda tidak mendukung untuk menampilkan dokumen akreditasi,
+            silakan unduh dokumen{' '}
+            <a
+              href={url}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 underline"
+            >
+              di sini
+            </a>
+            .
+          </p>
+        )}
       </iframe>
     </div>
   );

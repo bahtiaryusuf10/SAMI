@@ -1,6 +1,6 @@
 'use client';
 
-import BubbleChat from '@/components/forms/BubbleChat';
+// import BubbleChat from '@/components/forms/BubbleChat';
 // import ImportDialog from '@/components/ImportDialog';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
@@ -8,13 +8,48 @@ import { ShareButton } from '../ShareButton';
 import { DashboardSettings } from '../settings/DashboardSettings';
 import { QuickFilter } from '../settings/QuickFilter';
 import { MySingleValueChart } from '../charts/MySingleValueChart';
-import { AlertTriangle, Book, Loader2, Puzzle, User } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowUpDown,
+  Book,
+  Loader2,
+  Puzzle,
+  User,
+} from 'lucide-react';
+import { MyBarChart } from '../charts/MyBarChart';
+import { useCallback, useMemo, useState } from 'react';
+import { DashboardGridLayout } from '../DashboardGridLayout';
+import { MyPieChart } from '../charts/MyPieChart';
+import { Button } from '../ui/button';
+import { ColumnDef } from '@tanstack/react-table';
+import { exportAsXlsx } from '@/lib/utils/handleExportFile';
+import { DrilldownModal } from '../Modal/DrilldownModal';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Badge } from '../ui/badge';
 
 interface DataState<T> {
   data: T | null;
   isLoading: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any;
+}
+
+interface ChartDataBar {
+  label: string;
+  value: number;
+}
+
+interface ChartDataPie {
+  id: string;
+  label: string;
+  value: string;
+}
+
+interface DataTable {
+  course_id: string;
+  course_name: string;
+  course_category: string;
+  lecturer_names: string;
 }
 
 interface InfoAgregatKelasKolaboratif {
@@ -25,6 +60,10 @@ interface InfoAgregatKelasKolaboratif {
 
 interface DashboardData {
   infoAgregatKelasKolaboratif: DataState<InfoAgregatKelasKolaboratif>;
+  distribusiCaseProject: DataState<ChartDataBar>;
+  top5DosenCaseProject: DataState<ChartDataBar>;
+  distribusiJenisMataKuliah: DataState<ChartDataPie>;
+  distribusiMetodeMataKuliah: DataState<ChartDataPie>;
 }
 
 interface KelasKolaboratifUIProps {
@@ -33,6 +72,207 @@ interface KelasKolaboratifUIProps {
   isPublicView?: boolean;
   initialActiveYear?: number | null;
 }
+
+interface DashboardConfigItem {
+  id: string;
+  title: string;
+  type: 'small' | 'semiMedium' | 'medium' | 'semiLarge' | 'large';
+  isPercentage?: boolean;
+  isDrillDown?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  chartProps?: Record<string, any>;
+}
+
+const dashboardConfig: DashboardConfigItem[] = [
+  {
+    id: 'distribusi-case-project',
+    title: 'Distribusi Case Method & Project',
+    type: 'medium',
+    component: MyBarChart,
+    isDrillDown: true,
+    chartProps: {
+      dataKeys: ['value'],
+      indexBy: 'label',
+      axisBottomLegend: 'Semester',
+      axisLeftLegend: 'Jumlah Mata Kuliah',
+    },
+  },
+  {
+    id: 'distribusi-jenis-mata-kuliah',
+    title: 'Proporsi Jenis Mata Kuliah',
+    type: 'medium',
+    isDrillDown: true,
+    component: MyPieChart,
+  },
+  {
+    id: 'distribusi-metode-mata-kuliah',
+    title: 'Proporsi Metode Mata Kuliah',
+    type: 'medium',
+    component: MyPieChart,
+  },
+  {
+    id: 'top5-dosen-case-project',
+    title: 'Top 5 Dosen Case Method & Project',
+    type: 'medium',
+    component: MyBarChart,
+    chartProps: {
+      layout: 'horizontal',
+      dataKeys: ['value'],
+      indexBy: 'label',
+      axisBottomLegend: 'Nama Dosen',
+      axisLeftLegend: 'Jumlah Mata Kuliah',
+    },
+  },
+] as const;
+
+type DashboardId = (typeof dashboardConfig)[number]['id'];
+
+const courseColumns: ColumnDef<DataTable>[] = [
+  {
+    accessorKey: 'course_id',
+    header: ({ column }) => {
+      return (
+        <div className="text-center w-[150px]">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Kode
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => (
+      <div className="text-center w-[150px]" title={row.getValue('course_id')}>
+        {row.getValue('course_id')}
+      </div>
+    ),
+    meta: {
+      displayName: 'Kode',
+    },
+  },
+  {
+    accessorKey: 'course_name',
+    header: ({ column }) => {
+      return (
+        <div className="text-center">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Nama
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => {
+      return (
+        <div className="text-center whitespace-normal break-words line-clamp-3">
+          {row.getValue('course_name')}
+        </div>
+      );
+    },
+    meta: {
+      displayName: 'Nama',
+    },
+  },
+  {
+    accessorKey: 'course_category',
+    header: ({ column }) => {
+      return (
+        <div className="text-center">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Jenis
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => {
+      return (
+        <div className="text-center">{row.getValue('course_category')}</div>
+      );
+    },
+    meta: {
+      displayName: 'Jenis',
+    },
+  },
+  {
+    accessorKey: 'lecturer_names',
+    header: ({ column }) => {
+      return (
+        <div className="text-center">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Dosen Pengampu
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => {
+      const lecturersString = row.getValue('lecturer_names') as string;
+      const lecturersArray = lecturersString ? lecturersString.split('\n') : [];
+      const MAX_VISIBLE = 2;
+
+      if (lecturersArray.length <= MAX_VISIBLE) {
+        return (
+          <div className="flex flex-wrap gap-1">
+            {lecturersArray.map((lecturer, index) => (
+              <Badge key={index} variant="secondary">
+                {lecturer}
+              </Badge>
+            ))}
+          </div>
+        );
+      }
+
+      const visibleLecturers = lecturersArray.slice(0, MAX_VISIBLE);
+      const hiddenCount = lecturersArray.length - MAX_VISIBLE;
+
+      return (
+        <div className="flex flex-wrap items-center gap-1">
+          {visibleLecturers.map((lecturer, index) => (
+            <Badge key={index} variant="secondary">
+              {lecturer}
+            </Badge>
+          ))}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Badge
+                variant="default"
+                className="cursor-pointer bg-blue-300 hover:bg-blue-200"
+              >
+                + {hiddenCount} lainnya
+              </Badge>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2">
+              <div className="flex flex-col gap-1">
+                {lecturersArray.map((lecturer, index) => (
+                  <div key={index} className="text-sm p-1">
+                    {lecturer}
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+      );
+    },
+    meta: {
+      displayName: 'Dosen Pengampu',
+    },
+  },
+];
 
 export function KelasKolaboratifUI({
   pageKey,
@@ -58,7 +298,30 @@ export function KelasKolaboratifUI({
     setActiveYear(pageKey, newYear === 'all' ? null : parseInt(newYear));
   };
 
-  const { infoAgregatKelasKolaboratif } = dashboardData;
+  const {
+    infoAgregatKelasKolaboratif,
+    distribusiCaseProject,
+    top5DosenCaseProject,
+    distribusiJenisMataKuliah,
+    distribusiMetodeMataKuliah,
+  } = dashboardData;
+
+  // Drilldown Mata Kuliah
+  const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
+  const [dataMataKuliah, setDataMataKuliah] = useState<DataTable[] | null>(
+    null
+  );
+  const [isDrilldownMataKuliahLoading, setIsDrilldownMataKuliahLoading] =
+    useState(false);
+
+  // Drilldown jenis mata kuliah
+  const [activeJenisMataKuliahData, setActiveJenisMataKuliahData] =
+    useState(null);
+  const [jenisMataKuliahBreadcrumbs, setJenisMataKuliahBreadcrumbs] = useState([
+    { label: 'Jenis Mata Kuliah', level: 0 },
+  ]);
+  const [isJenisMataKuliahLoading, setIsJenisMataKuliahLoading] =
+    useState(false);
 
   // Dashboard Settings
   const pageSettings = useDashboardSettingsStore(
@@ -74,6 +337,186 @@ export function KelasKolaboratifUI({
   const setPageShowLabels = useDashboardSettingsStore(
     (state) => state.setPageShowLabels
   );
+
+  // Drilldown Data Handling for Achievement
+  const handleDrilldownMataKuliah = useCallback(
+    async (barData: { indexValue: string; id: string }) => {
+      const semester = barData.indexValue;
+
+      setSelectedSemester(semester);
+      setIsDrilldownMataKuliahLoading(true);
+      setDataMataKuliah(null);
+
+      try {
+        const baseUrl = `/api/public/kelas-kolaboratif/drilldown-course-project-per-semester?semester=${encodeURIComponent(
+          semester
+        )}`;
+
+        const finalUrl = activeReportingYear
+          ? `${baseUrl}&year=${activeReportingYear}`
+          : baseUrl;
+
+        const response = await fetch(finalUrl);
+
+        if (!response.ok)
+          throw new Error(`Gagal fetch data mata kuliah untuk ${semester}`);
+
+        const result = await response.json();
+        setDataMataKuliah(result.data);
+      } catch (error) {
+        console.error(error);
+        setDataMataKuliah([]);
+      } finally {
+        setIsDrilldownMataKuliahLoading(false);
+      }
+    },
+    [activeReportingYear]
+  );
+
+  // Export drilldown
+  const handleExportDrilldownData = () => {
+    if (dataMataKuliah && dataMataKuliah.length > 0 && selectedSemester) {
+      const fileName = `Mata Kuliah Course & Project semester ${selectedSemester}`;
+      exportAsXlsx(dataMataKuliah, fileName, courseColumns);
+    }
+  };
+
+  // Drilldown Data Handling for Course Category
+  const handleDrilldownJenisMataKuliah = useCallback(
+    async (pieData: { id: string }) => {
+      const coursetype = pieData.id;
+
+      if (jenisMataKuliahBreadcrumbs.length > 1) return;
+
+      setIsJenisMataKuliahLoading(true);
+      try {
+        const baseUrl = `/api/public/kelas-kolaboratif/drilldown-jenis-mata-kuliah?coursetype=${coursetype}`;
+        const finalUrl = activeReportingYear
+          ? `${baseUrl}&year=${activeReportingYear}`
+          : baseUrl;
+        const response = await fetch(finalUrl);
+
+        if (!response.ok) throw new Error('Gagal fetch data detail');
+
+        const result = await response.json();
+
+        setActiveJenisMataKuliahData(result.data);
+        setJenisMataKuliahBreadcrumbs((prev) => [
+          ...prev,
+          { label: `${coursetype}`, level: 1 },
+        ]);
+      } catch (error) {
+        console.error(error);
+        setActiveJenisMataKuliahData(null);
+      } finally {
+        setIsJenisMataKuliahLoading(false);
+      }
+    },
+    [activeReportingYear, jenisMataKuliahBreadcrumbs]
+  );
+
+  const handleJenisMataKuliahBreadcrumbClick = useCallback((level: number) => {
+    if (level === 0) {
+      setJenisMataKuliahBreadcrumbs((prev) => prev.slice(0, 1));
+    }
+  }, []);
+
+  // Chart Component
+  const chartChildren = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dataStateMap: Record<DashboardId, DataState<any>> = {
+      'distribusi-case-project': distribusiCaseProject,
+      'top5-dosen-case-project': top5DosenCaseProject,
+      'distribusi-jenis-mata-kuliah': distribusiJenisMataKuliah,
+      'distribusi-metode-mata-kuliah': distribusiMetodeMataKuliah,
+    };
+
+    const dynamicDescription = `Data untuk tahun laporan ${activeReportingYear}`;
+
+    // eslint-disable-next-line prefer-const
+    let tempDashboardConfig = [...dashboardConfig];
+
+    if (jenisMataKuliahBreadcrumbs.length > 1) {
+      const jenisMataKuliahChartIndex = tempDashboardConfig.findIndex(
+        (config) => config.id === 'distribusi-jenis-mata-kuliah'
+      );
+
+      if (jenisMataKuliahChartIndex !== -1) {
+        tempDashboardConfig[jenisMataKuliahChartIndex] = {
+          ...tempDashboardConfig[jenisMataKuliahChartIndex],
+          title: `Proporsi Jenis Mata Kuliah`,
+          component: MyBarChart,
+          chartProps: {
+            dataKeys: ['value'],
+            indexBy: 'label',
+            axisBottomLegend: 'Tingkat',
+            axisLeftLegend: 'Jumlah',
+            breadcrumbs: jenisMataKuliahBreadcrumbs,
+            onBreadcrumbClick: handleJenisMataKuliahBreadcrumbClick,
+          },
+        };
+      }
+    }
+
+    if (jenisMataKuliahBreadcrumbs.length > 1) {
+      dataStateMap['distribusi-jenis-mata-kuliah'] = {
+        data: activeJenisMataKuliahData,
+        isLoading: isJenisMataKuliahLoading,
+        error: null,
+      };
+    }
+
+    return tempDashboardConfig.map((config) => {
+      const ChartComponent = config.component;
+      const chartState = dataStateMap[config.id];
+      const chartProps = { ...(config.chartProps ?? {}) };
+
+      if (config.id === 'distribusi-case-project') {
+        chartProps.onClick = handleDrilldownMataKuliah;
+      }
+
+      if (config.id === 'distribusi-jenis-mata-kuliah') {
+        chartProps.onClick = handleDrilldownJenisMataKuliah;
+      }
+
+      if (!chartState) return null;
+
+      return (
+        <ChartComponent
+          key={config.id}
+          title={config.title}
+          type={config.type as 'small' | 'medium' | 'large'}
+          isPercentage={config.isPercentage}
+          drillDown={config.isDrillDown}
+          description={dynamicDescription}
+          data={chartState.data || []}
+          isLoading={chartState.isLoading}
+          error={chartState.error}
+          pageKey={pageKey}
+          chartId={config.id}
+          colorScheme={theme}
+          enableLabel={showLabels}
+          enableArcLabels={showLabels}
+          {...chartProps}
+        />
+      );
+    });
+  }, [
+    distribusiCaseProject,
+    top5DosenCaseProject,
+    distribusiJenisMataKuliah,
+    distribusiMetodeMataKuliah,
+    activeReportingYear,
+    jenisMataKuliahBreadcrumbs,
+    handleJenisMataKuliahBreadcrumbClick,
+    activeJenisMataKuliahData,
+    isJenisMataKuliahLoading,
+    pageKey,
+    theme,
+    showLabels,
+    handleDrilldownMataKuliah,
+    handleDrilldownJenisMataKuliah,
+  ]);
 
   return (
     <DashboardProvider isPublicView={isPublicView}>
@@ -106,6 +549,7 @@ export function KelasKolaboratifUI({
                   apiUrl="/api/public/filters/tahun-laporan-dosen"
                   activeValue={activeReportingYear}
                   onValueChange={handleValueChange}
+                  showAllOption={false}
                 />
               )}
               <DashboardSettings
@@ -177,15 +621,30 @@ export function KelasKolaboratifUI({
                   </>
                 )}
               </div>
-              {/* {!isPublicView && (
-                <div className="flex flex-wrap gap-4">
-                  <ImportDialog type="courses" />
-                </div>
-              )} */}
+              <div className="-mx-4">
+                <DashboardGridLayout pageKey={pageKey}>
+                  {chartChildren}
+                </DashboardGridLayout>
+              </div>
+              <DrilldownModal
+                isOpen={dataMataKuliah !== null}
+                onClose={() => {
+                  setDataMataKuliah(null);
+                  setSelectedSemester(null);
+                }}
+                title={`Daftar Mata Kuliah`}
+                description={`Berikut adalah daftar mata kuliah case method, team based project, dan case method & team based project untuk semester ${selectedSemester}.`}
+                columns={courseColumns}
+                data={dataMataKuliah}
+                isLoading={isDrilldownMataKuliahLoading}
+                onExport={handleExportDrilldownData}
+                initialPageSize={5}
+                searchPlaceholder="Cari berdasarkan Kode Mata Kuliah atau Nama [ / ]"
+              />
             </div>
           </div>
         </div>
-        {!isPublicView && <BubbleChat />}
+        {/* {!isPublicView && <BubbleChat />} */}
       </>
     </DashboardProvider>
   );

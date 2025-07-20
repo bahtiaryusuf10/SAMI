@@ -36,6 +36,7 @@ interface MyBarChartProps {
   title: string;
   type?: 'small' | 'medium' | 'large';
   layout?: 'vertical' | 'horizontal';
+  grouped?: 'grouped' | 'stacked';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onClick?: (data: any) => void;
   breadcrumbs?: { label: string; level: number }[];
@@ -58,6 +59,7 @@ export const MyBarChart = ({
   axisLeftLegend,
   title,
   layout: layoutFromProps,
+  grouped: groupedFromProps,
   onClick,
   breadcrumbs,
   onBreadcrumbClick,
@@ -98,7 +100,7 @@ export const MyBarChart = ({
 
   const {
     layout = layoutFromProps || 'vertical',
-    groupMode = 'grouped',
+    groupMode = groupedFromProps || 'grouped',
     sortByValue = false,
   } = chartSettings || {};
 
@@ -131,7 +133,7 @@ export const MyBarChart = ({
             {drillDown && (
               <Tooltip>
                 <TooltipTrigger>
-                  <Info className="w-4 h-4 text-blue-300" />
+                  <Info className="w-5 h-5 text-blue-300" />
                 </TooltipTrigger>
                 <TooltipContent side="right" align="center" sideOffset={-2}>
                   <p>Drill down data</p>
@@ -188,16 +190,12 @@ export const MyBarChart = ({
               data={sortedData}
               keys={visibleKeys}
               indexBy={indexBy}
-              margin={
-                dataKeys.length > 1
-                  ? { top: 30, right: 20, bottom: 50, left: 60 }
-                  : {
-                      top: 30,
-                      right: layout === 'vertical' ? 20 : 30,
-                      bottom: 50,
-                      left: layout === 'vertical' ? 60 : 80,
-                    }
-              }
+              margin={{
+                top: 20,
+                right: layout === 'vertical' ? 20 : 30,
+                bottom: 50,
+                left: layout === 'vertical' ? 60 : 115,
+              }}
               padding={0.3}
               groupMode={groupMode}
               layout={layout}
@@ -248,14 +246,12 @@ export const MyBarChart = ({
               axisLeft={{
                 tickSize: 5,
                 tickPadding: 5,
-                truncateTickAt:
-                  layout === 'vertical' ? 0 : dataKeys.length > 1 ? 5 : 10,
-                tickRotation: layout === 'vertical' ? 0 : -35,
+                truncateTickAt: layout === 'vertical' ? 0 : 14,
+                tickRotation: layout === 'vertical' ? 0 : -30,
                 legend:
                   layout === 'vertical' ? axisLeftLegend : axisBottomLegend,
                 legendPosition: 'middle',
-                legendOffset:
-                  layout === 'vertical' ? -50 : dataKeys.length > 1 ? -55 : -75,
+                legendOffset: layout === 'vertical' ? -50 : -100,
                 format: (value) => normalizeTitleCase(value),
               }}
               labelSkipWidth={12}
