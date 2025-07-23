@@ -27,5 +27,6 @@ export function transformKaryaDosenTerdampakData(rawData: { InfoAgregatKaryaDose
             isLoading: false,
             error: null,
         },
+        importLog: { data: [], isLoading: false, error: null },
     };
 }

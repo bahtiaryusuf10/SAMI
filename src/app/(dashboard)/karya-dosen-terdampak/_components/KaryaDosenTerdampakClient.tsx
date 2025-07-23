@@ -96,6 +96,19 @@ export default function KaryaDosenTerdampakClient({
     dedupingInterval: 10000,
   });
 
+  const apiUrlImportLog = `/api/import-logs/links-for-page?year=${
+    activeReportingYear || ''
+  }&page=${pageKey}`;
+  const {
+    data: resultImportLog,
+    error: errorImportLog,
+    isLoading: isLoadingImportLog,
+  } = useSWR(apiUrlImportLog, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 10000,
+  });
+
   const dashboardData = {
     infoAgregatKaryaDosen: {
       data: resultInfoAgregatKaryaDosen?.data,
@@ -121,6 +134,11 @@ export default function KaryaDosenTerdampakClient({
       data: resultTop5DosenPublikasi?.data,
       isLoading: isLoadingTop5DosenPublikasi,
       error: errorTop5DosenPublikasi,
+    },
+    importLog: {
+      data: resultImportLog?.data,
+      isLoading: isLoadingImportLog,
+      error: errorImportLog,
     },
   };
 

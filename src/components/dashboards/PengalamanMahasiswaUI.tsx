@@ -1,6 +1,7 @@
 'use client';
 
 // import BubbleChat from '@/components/forms/BubbleChat';
+import { useCallback, useMemo, useState, JSX } from 'react';
 import ImportDialog from '@/components/ImportDialog';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
@@ -13,11 +14,12 @@ import {
   ArrowUpDown,
   BadgeCheck,
   Briefcase,
+  FileText,
   Loader2,
+  Upload,
   User,
 } from 'lucide-react';
 import { MyBarChart } from '../charts/MyBarChart';
-import { useCallback, useMemo, useState } from 'react';
 import { DashboardGridLayout } from '../DashboardGridLayout';
 import { MyPieChart } from '../charts/MyPieChart';
 import { MyScatterPlot } from '../charts/MyScatterPlot';
@@ -25,6 +27,14 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '../ui/button';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
 import { DrilldownModal } from '../Modal/DrilldownModal';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 
 interface DataState<T> {
   data: T | null;
@@ -60,6 +70,12 @@ interface DataTable {
   year: number;
 }
 
+interface DataImportLog {
+  source_url: string;
+  file_name: string;
+  import_type: string;
+}
+
 interface InfoAgregatMahasiswa {
   jumlah_mahasiswa_aktif: number;
   persentase_mbkm_mahasiswa: number;
@@ -72,6 +88,7 @@ interface DashboardData {
   top5MitraMbkm: DataState<ChartDataBar>;
   distribusiMbkm: DataState<ChartDataPie>;
   korelasiPrestasiDanIpk: DataState<ChartDataScatterSeries>;
+  importLog?: DataState<DataImportLog[]>;
 }
 
 interface PengalamanMahasiswaUIProps {
@@ -244,6 +261,7 @@ export function PengalamanMahasiswaUI({
     top5MitraMbkm,
     distribusiMbkm,
     korelasiPrestasiDanIpk,
+    importLog,
   } = dashboardData;
 
   // Drilldown Prestasi
@@ -403,7 +421,7 @@ export function PengalamanMahasiswaUI({
               ) : (
                 <QuickFilter
                   label="Tahun Laporan"
-                  apiUrl="/api/public/filters/tahun-laporan-mahasiswa"
+                  apiUrl="/api/public/filters/tahun-laporan"
                   activeValue={activeReportingYear}
                   onValueChange={handleValueChange}
                   showAllOption={false}
@@ -502,11 +520,85 @@ export function PengalamanMahasiswaUI({
                 searchPlaceholder="Cari berdasarkan Nama atau Pencapaian [ / ]"
               />
               {!isPublicView && (
-                <div className="flex flex-wrap gap-4">
-                  <ImportDialog type="mbkms" />
-                  {/* <ImportDialog type="students" /> */}
-                  <ImportDialog type="achievements" />
-                  <ImportDialog type="certificates" />
+                <div className="flex w-full items-center justify-end-safe mt-3 gap-4">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Import Data
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      className="bg-white text-black shadow-md border border-gray-200 rounded-md"
+                      align="end"
+                      sideOffset={8}
+                    >
+                      <DropdownMenuLabel className="font-medium text-blue-400">
+                        Pilih Jenis Data
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="p-0 my-2 mx-1"
+                      >
+                        <ImportDialog type="mbkms" />
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="p-0 my-2 mx-1"
+                      >
+                        <ImportDialog type="achievements" />
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="p-0 my-2 mx-1"
+                      >
+                        <ImportDialog type="certificates" />
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {!importLog?.isLoading &&
+                    importLog?.data &&
+                    importLog?.data.length > 0 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                          >
+                            <FileText className="mr-2 h-4 w-4" />
+                            Lihat Sumber Data
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          className="bg-white text-black shadow-md border border-gray-200 rounded-md p-2"
+                          align="end"
+                          sideOffset={8}
+                        >
+                          <DropdownMenuLabel className="font-medium text-blue-400 mb-1">
+                            Sumber Data
+                          </DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {importLog?.data.map((link, index) => (
+                            <a
+                              key={index}
+                              href={link.source_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block"
+                            >
+                              <DropdownMenuItem className="hover:!bg-blue-300 cursor-pointer transition-colors text-blue-400 p-2 rounded-md text-sm mb-1 hover:!text-white">
+                                {link.file_name}
+                              </DropdownMenuItem>
+                            </a>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                 </div>
               )}
             </div>

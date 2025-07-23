@@ -26,5 +26,6 @@ export function transformLulusanBekerjaData(rawData: { LokasiBekerja: any; Statu
       isLoading: false,
       error: null,
     },
+    importLog: { data: [], isLoading: false, error: null },
   };
 }

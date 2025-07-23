@@ -41,11 +41,29 @@ export default function MahsiswaClient({ filter }: { filter: number | null }) {
     // refreshInterval: 300000, // auto-update (re-fetch) after 5 minutes
   });
 
+  const apiUrlImportLog = `/api/import-logs/links-for-page?year=${
+    activeReportingYear || ''
+  }&page=${pageKey}`;
+  const {
+    data: resultImportLog,
+    error: errorImportLog,
+    isLoading: isLoadingImportLog,
+  } = useSWR(apiUrlImportLog, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 10000,
+  });
+
   const data = {
     dataMataKuliah: {
       data: resultMataKuliah?.data,
       isLoading: isLoadingMataKuliah,
       error: errorMataKuliah,
+    },
+    importLog: {
+      data: resultImportLog?.data,
+      isLoading: isLoadingImportLog,
+      error: errorImportLog,
     },
   };
 

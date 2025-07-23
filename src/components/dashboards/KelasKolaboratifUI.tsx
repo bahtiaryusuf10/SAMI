@@ -546,7 +546,7 @@ export function KelasKolaboratifUI({
               ) : (
                 <QuickFilter
                   label="Tahun Laporan"
-                  apiUrl="/api/public/filters/tahun-laporan-dosen"
+                  apiUrl="/api/public/filters/tahun-laporan"
                   activeValue={activeReportingYear}
                   onValueChange={handleValueChange}
                   showAllOption={false}

@@ -12,9 +12,11 @@ import {
   AlertTriangle,
   ArrowUpDown,
   BadgeCheck,
+  FileText,
   GraduationCap,
   Loader2,
   Rocket,
+  Upload,
   User,
 } from 'lucide-react';
 import { MyPieChart } from '../charts/MyPieChart';
@@ -26,6 +28,14 @@ import { DrilldownModal } from '../Modal/DrilldownModal';
 import { Button } from '../ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import { normalizeTitleCase } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 
 interface DataState<T> {
   data: T | null;
@@ -52,6 +62,12 @@ interface DataTable {
   teaching_date: string;
 }
 
+interface DataImportLog {
+  source_url: string;
+  file_name: string;
+  import_type: string;
+}
+
 interface InfoAgregatPraktisi {
   persentase_praktisi_mengajar: number;
   persentase_dosen_berkualifikasi_s3: number;
@@ -65,6 +81,7 @@ interface DashboardData {
   top5MataKuliah: DataState<ChartDataBar>;
   distribusiPerusahaan: DataState<ChartDataPie>;
   sertifikasiProfesi: DataState<ChartDataBar>;
+  importLog?: DataState<DataImportLog[]>;
 }
 
 interface PraktisiMengajarUIProps {
@@ -254,6 +271,7 @@ export function PraktisiMengajarUI({
     top5MataKuliah,
     distribusiPerusahaan,
     sertifikasiProfesi,
+    importLog,
   } = dashboardData;
 
   // Drilldown mata kuliah oleh praktisi
@@ -488,7 +506,7 @@ export function PraktisiMengajarUI({
               ) : (
                 <QuickFilter
                   label="Tahun Laporan"
-                  apiUrl="/api/public/filters/tahun-laporan-dosen"
+                  apiUrl="/api/public/filters/tahun-laporan"
                   activeValue={activeReportingYear}
                   onValueChange={handleValueChange}
                   showAllOption={false}
@@ -604,10 +622,79 @@ export function PraktisiMengajarUI({
                 searchPlaceholder="Cari berdasarkan Nama [ / ]"
               />
               {!isPublicView && (
-                <div className="flex flex-wrap gap-4">
-                  {/* <ImportDialog type="lecturers" /> */}
-                  <ImportDialog type="practitioner_teachings" />
-                  <ImportDialog type="field_experiences" />
+                <div className="flex w-full items-center justify-end-safe mt-3 gap-4">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Import Data
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      className="bg-white text-black shadow-md border border-gray-200 rounded-md"
+                      align="end"
+                      sideOffset={8}
+                    >
+                      <DropdownMenuLabel className="font-medium text-blue-400">
+                        Pilih Jenis Data
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="p-0 my-2 mx-1"
+                      >
+                        <ImportDialog type="practitioner_teachings" />
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="p-0 my-2 mx-1"
+                      >
+                        <ImportDialog type="field_experiences" />
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {!importLog?.isLoading &&
+                    importLog?.data &&
+                    importLog?.data.length > 0 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                          >
+                            <FileText className="mr-2 h-4 w-4" />
+                            Lihat Sumber Data
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          className="bg-white text-black shadow-md border border-gray-200 rounded-md p-2"
+                          align="end"
+                          sideOffset={8}
+                        >
+                          <DropdownMenuLabel className="font-medium text-blue-400 mb-1">
+                            Sumber Data
+                          </DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {importLog?.data.map((link, index) => (
+                            <a
+                              key={index}
+                              href={link.source_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block"
+                            >
+                              <DropdownMenuItem className="hover:!bg-blue-300 cursor-pointer transition-colors text-blue-400 p-2 rounded-md text-sm mb-1 hover:!text-white">
+                                {link.file_name}
+                              </DropdownMenuItem>
+                            </a>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                 </div>
               )}
             </div>

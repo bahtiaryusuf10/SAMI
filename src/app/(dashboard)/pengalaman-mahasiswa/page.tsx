@@ -5,7 +5,7 @@ export const revalidate = 600; // Cache page for 10 minute
 
 export default async function PengalamanMahasiswaPage() {
   const defaultFilter = await getDefaultFilter(
-    '/api/public/filters/tahun-laporan-mahasiswa'
+    '/api/public/filters/tahun-laporan'
   );
 
   return <PengalamanMahasiswaClient filter={defaultFilter} />;

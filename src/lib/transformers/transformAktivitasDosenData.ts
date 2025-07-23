@@ -27,5 +27,6 @@ export function transformAktivitasDosenData(rawData: { InfoAgregatAktivitasDosen
             isLoading: false,
             error: null,
         },
+        importLog: { data: [], isLoading: false, error: null },
     };
 }

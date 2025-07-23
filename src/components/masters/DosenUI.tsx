@@ -6,8 +6,16 @@ import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
 import { QuickFilter } from '../settings/QuickFilter';
 import { MyDataTableMaster } from '../tables/MyDataTableMaster';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, Check, X } from 'lucide-react';
+import { ArrowUpDown, Check, FileText, Upload, X } from 'lucide-react';
 import { Button } from '../ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 
 interface DataState<T> {
   data: T | null;
@@ -24,8 +32,15 @@ interface Dosen {
   academic_rank: string;
 }
 
+interface DataImportLog {
+  source_url: string;
+  file_name: string;
+  import_type: string;
+}
+
 interface Data {
   dataDosen: DataState<Dosen[]>;
+  importLog?: DataState<DataImportLog[]>;
 }
 
 interface DosenUIProps {
@@ -187,7 +202,7 @@ export function DosenUI({
     setActiveYear(pageKey, newYear === 'all' ? null : parseInt(newYear));
   };
 
-  const { dataDosen } = data;
+  const { dataDosen, importLog } = data;
 
   return (
     <DashboardProvider isPublicView={isPublicView}>
@@ -234,8 +249,73 @@ export function DosenUI({
                 />
               </div>
               {!isPublicView && (
-                <div className="flex flex-wrap gap-4">
-                  <ImportDialog type="lecturers" />
+                <div className="flex w-full items-center justify-end-safe mt-3 gap-4">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Import Data
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      className="bg-white text-black shadow-md border border-gray-200 rounded-md"
+                      align="end"
+                      sideOffset={8}
+                    >
+                      <DropdownMenuLabel className="font-medium text-blue-400">
+                        Pilih Jenis Data
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="p-0 my-2 mx-1"
+                      >
+                        <ImportDialog type="lecturers" />
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {!importLog?.isLoading &&
+                    importLog?.data &&
+                    importLog?.data.length > 0 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                          >
+                            <FileText className="mr-2 h-4 w-4" />
+                            Lihat Sumber Data
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          className="bg-white text-black shadow-md border border-gray-200 rounded-md p-2"
+                          align="end"
+                          sideOffset={8}
+                        >
+                          <DropdownMenuLabel className="font-medium text-blue-400 mb-1">
+                            Sumber Data
+                          </DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {importLog?.data.map((link, index) => (
+                            <a
+                              key={index}
+                              href={link.source_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block"
+                            >
+                              <DropdownMenuItem className="hover:!bg-blue-300 cursor-pointer transition-colors text-blue-400 p-2 rounded-md text-sm mb-1 hover:!text-white">
+                                {link.file_name}
+                              </DropdownMenuItem>
+                            </a>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                 </div>
               )}
             </div>

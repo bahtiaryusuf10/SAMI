@@ -3,13 +3,13 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const graduationYear = searchParams.get('year');
+  const reportingYear = searchParams.get('year');
 
   const supabase = await createSupabaseServerClient();
 
   try {
     const { data, error } = await supabase.rpc('get_graduate_status', {
-      p_graduation_year: graduationYear ? parseInt(graduationYear) : null,
+      p_report_year: reportingYear ? parseInt(reportingYear) : null,
     });
 
     if (error) {

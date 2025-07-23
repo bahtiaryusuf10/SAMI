@@ -32,14 +32,19 @@ Deno.serve(async (req) => {
     setTimeout(() => reject(new Error(`Proses melebihi batas waktu maksimal (${MAX_PROCESSING_TIME / 1000} detik).`)), MAX_PROCESSING_TIME)
   );
 
+  let file: File | null = null;
+  let formData: FormData | null = null;
+
   try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!, 
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    formData = await req.formData();
+    file = formData.get('file');
+    
     const mainPromise = (async() => {
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL')!, 
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-      );
-      const formData = await req.formData();
-      const file = formData.get('file');
 
       if (!(file instanceof File)) { 
         throw new Error("File tidak ditemukan."); 
@@ -65,12 +70,36 @@ Deno.serve(async (req) => {
     
     const result = await Promise.race([mainPromise, timeoutPromise]);
 
+    await supabase.from('import_logs').insert({
+        import_type: 'cooperations',
+        year: Number(formData.get('year')),
+        file_name: file.name,
+        file_size_kb: (file.size / 1024).toFixed(2),
+        rows_processed: (result as { message: string }).message.split(' ')[0],
+        status: 'Sukses',
+        source_file_url: formData.get('sourceUrl'),
+    });
+
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
   } catch (err) {
+    const supabase = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    if (file && formData) {
+      await supabase.from('import_logs').insert({
+          import_type: 'cooperations',
+          year: Number(formData.get('year')),
+          file_name: file.name,
+          status: `Gagal: ${err.message}`,
+      });
+    }
+
     return new Response(JSON.stringify({ error: err.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

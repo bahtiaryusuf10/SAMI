@@ -44,11 +44,29 @@ export default function StandarInternasionalClient({
     dedupingInterval: 10000,
   });
 
+  const apiUrlImportLog = `/api/import-logs/links-for-page?year=${
+    activeReportingYear || ''
+  }&page=${pageKey}`;
+  const {
+    data: resultImportLog,
+    error: errorImportLog,
+    isLoading: isLoadingImportLog,
+  } = useSWR(apiUrlImportLog, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 10000,
+  });
+
   const dashboardData = {
     infoAkreditasi: {
       data: resultInfoAkreditasi?.data,
       isLoading: isLoadingInfoAkreditasi,
       error: errorInfoAkreditasi,
+    },
+    importLog: {
+      data: resultImportLog?.data,
+      isLoading: isLoadingImportLog,
+      error: errorImportLog,
     },
   };
 

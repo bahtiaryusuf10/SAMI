@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get('category');
-  const year = searchParams.get('year');
+  const reportingYear = searchParams.get('year');
 
   if (!category) {
     return NextResponse.json(
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   try {
     const { data, error } = await supabase.rpc('get_income_by_category', {
       p_income_category: category,
-      p_graduation_year: year ? parseInt(year) : null,
+      p_report_year: reportingYear ? parseInt(reportingYear) : null,
     });
 
     if (error) {

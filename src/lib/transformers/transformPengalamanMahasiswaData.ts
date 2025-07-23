@@ -27,5 +27,6 @@ export function transformPengalamanMahasiswaData(rawData: { InfoAgregatMahasiswa
             isLoading: false,
             error: null,
         },
+        importLog: { data: [], isLoading: false, error: null },
     };
 }

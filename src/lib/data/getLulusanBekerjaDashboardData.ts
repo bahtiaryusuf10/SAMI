@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 export async function getLulusanBekerjaDashboardData(year: number | null) {
   const supabase = await createSupabaseServerClient();
 
-  const graduationYear = year;
+  const reportingYear = year;
 
   const [
     infoAgregatLulusan,
@@ -13,17 +13,17 @@ export async function getLulusanBekerjaDashboardData(year: number | null) {
     penghasilanResult,
   ] = await Promise.all([
     supabase.rpc('get_graduates_aggregated_info', {
-      p_graduation_year: graduationYear,
+      p_report_year: reportingYear,
     }),
     supabase.rpc('get_work_province_distribution', {
-      p_graduation_year: graduationYear,
+      p_report_year: reportingYear,
     }),
-    supabase.rpc('get_graduate_status', { p_graduation_year: graduationYear }),
+    supabase.rpc('get_graduate_status', { p_report_year: reportingYear }),
     supabase.rpc('get_waiting_time_distribution', {
-      p_graduation_year: graduationYear,
+      p_report_year: reportingYear,
     }),
     supabase.rpc('get_income_distribution', {
-      p_graduation_year: graduationYear,
+      p_report_year: reportingYear,
     }),
   ]);
 

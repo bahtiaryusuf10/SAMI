@@ -11,7 +11,9 @@ import {
   AlertTriangle,
   ArrowUpDown,
   BookOpenCheck,
+  FileText,
   Loader2,
+  Upload,
   User,
   UserCheck,
 } from 'lucide-react';
@@ -26,6 +28,14 @@ import { exportAsXlsx } from '@/lib/utils/handleExportFile';
 import { DrilldownModal } from '../Modal/DrilldownModal';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Badge } from '../ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 
 interface DataState<T> {
   data: T | null;
@@ -55,6 +65,12 @@ interface DataTable {
   highest_qualification: string;
 }
 
+interface DataImportLog {
+  source_url: string;
+  file_name: string;
+  import_type: string;
+}
+
 interface InfoAgregatAktivitasDosen {
   persentase_tridarma_di_luar_kampus: number;
   jumlah_dosen_tetap_program_studi: number;
@@ -67,6 +83,7 @@ interface DashboardData {
   distribusiAktivitasDosen: DataState<ChartDataPie>;
   distribusiMembinaLomba: DataState<ChartDataBar>;
   sumberDanaPenelitianPkm: DataState<ChartDataPie>;
+  importLog?: DataState<DataImportLog[]>;
 }
 
 interface AktivitasDosenUIProps {
@@ -392,6 +409,7 @@ export function AktivitasDosenUI({
     distribusiAktivitasDosen,
     distribusiMembinaLomba,
     sumberDanaPenelitianPkm,
+    importLog,
   } = dashboardData;
 
   // Drilldown Source Fund
@@ -605,7 +623,7 @@ export function AktivitasDosenUI({
               ) : (
                 <QuickFilter
                   label="Tahun Laporan"
-                  apiUrl="/api/public/filters/tahun-laporan-dosen"
+                  apiUrl="/api/public/filters/tahun-laporan"
                   activeValue={activeReportingYear}
                   onValueChange={handleValueChange}
                   showAllOption={false}
@@ -721,10 +739,85 @@ export function AktivitasDosenUI({
                 searchPlaceholder="Cari berdasarkan Nama Dosen atau NIDN/NIDK [ / ]"
               />
               {!isPublicView && (
-                <div className="flex flex-wrap gap-4">
-                  <ImportDialog type="detasering_activities" />
-                  <ImportDialog type="teach_activities" />
-                  <ImportDialog type="research_services" />
+                <div className="flex w-full items-center justify-end-safe mt-3 gap-4">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Import Data
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      className="bg-white text-black shadow-md border border-gray-200 rounded-md"
+                      align="end"
+                      sideOffset={8}
+                    >
+                      <DropdownMenuLabel className="font-medium text-blue-400">
+                        Pilih Jenis Data
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="p-0 my-2 mx-1"
+                      >
+                        <ImportDialog type="detasering_activities" />
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="p-0 my-2 mx-1"
+                      >
+                        <ImportDialog type="teach_activities" />
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="p-0 my-2 mx-1"
+                      >
+                        <ImportDialog type="research_services" />
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {!importLog?.isLoading &&
+                    importLog?.data &&
+                    importLog?.data.length > 0 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                          >
+                            <FileText className="mr-2 h-4 w-4" />
+                            Lihat Sumber Data
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          className="bg-white text-black shadow-md border border-gray-200 rounded-md p-2"
+                          align="end"
+                          sideOffset={8}
+                        >
+                          <DropdownMenuLabel className="font-medium text-blue-400 mb-1">
+                            Sumber Data
+                          </DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {importLog?.data.map((link, index) => (
+                            <a
+                              key={index}
+                              href={link.source_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block"
+                            >
+                              <DropdownMenuItem className="hover:!bg-blue-300 cursor-pointer transition-colors text-blue-400 p-2 rounded-md text-sm mb-1 hover:!text-white">
+                                {link.file_name}
+                              </DropdownMenuItem>
+                            </a>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                 </div>
               )}
             </div>
