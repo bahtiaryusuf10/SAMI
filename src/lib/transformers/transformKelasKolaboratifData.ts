@@ -27,5 +27,6 @@ export function transformKelasKolaboratifData(rawData: { InfoAgregatKelasKolabor
             isLoading: false,
             error: null,
         },
+        importLog: { data: [], isLoading: false, error: null },
     };
 }

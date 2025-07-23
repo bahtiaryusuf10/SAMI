@@ -96,6 +96,19 @@ export default function AktivitasDosenClient({
     dedupingInterval: 10000,
   });
 
+  const apiUrlImportLog = `/api/import-logs/links-for-page?year=${
+    activeReportingYear || ''
+  }&page=${pageKey}`;
+  const {
+    data: resultImportLog,
+    error: errorImportLog,
+    isLoading: isLoadingImportLog,
+  } = useSWR(apiUrlImportLog, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 10000,
+  });
+
   const dashboardData = {
     infoAgregatAktivitasDosen: {
       data: resultInfoAgregatAktivitasDosen?.data,
@@ -121,6 +134,11 @@ export default function AktivitasDosenClient({
       data: resultSumberDanaPenelitianPkm?.data,
       isLoading: isLoadingSumberDanaPenelitianPkm,
       error: errorSumberDanaPenelitianPkm,
+    },
+    importLog: {
+      data: resultImportLog?.data,
+      isLoading: isLoadingImportLog,
+      error: errorImportLog,
     },
   };
 

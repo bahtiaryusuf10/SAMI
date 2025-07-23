@@ -27,5 +27,6 @@ export function transformKerjaSamaGlobalData(rawData: { InfoAgregatKerjaSama: an
             isLoading: false,
             error: null,
         },
+        importLog: { data: [], isLoading: false, error: null },
     };
 }

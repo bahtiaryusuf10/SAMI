@@ -5,7 +5,7 @@ export const revalidate = 600; // Cache page for 10 minute
 
 export default async function KelasKolaboratifPage() {
   const defaultFilter = await getDefaultFilter(
-    '/api/public/filters/tahun-laporan-dosen'
+    '/api/public/filters/tahun-laporan'
   );
 
   return <KelasKolaboratifClient filter={defaultFilter} />;

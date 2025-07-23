@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const province = searchParams.get('province');
-  const year = searchParams.get('year');
+  const reportingYear = searchParams.get('year');
 
   if (!province) {
     return NextResponse.json(
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
       'get_workplace_distribution_by_province',
       {
         p_province_name: province,
-        p_graduation_year: year ? parseInt(year) : null,
+        p_report_year: reportingYear ? parseInt(reportingYear) : null,
       }
     );
 

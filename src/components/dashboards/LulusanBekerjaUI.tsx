@@ -15,6 +15,8 @@ import {
   Wallet,
   Hourglass,
   ArrowUpDown,
+  FileText,
+  Upload,
 } from 'lucide-react';
 import { DashboardSettings } from '@/components/settings/DashboardSettings';
 import { ShareButton } from '@/components/ShareButton';
@@ -24,6 +26,14 @@ import { exportAsXlsx } from '@/lib/utils/handleExportFile';
 import { QuickFilter } from '@/components/settings/QuickFilter';
 import { ColumnDef } from '@tanstack/react-table';
 import { DrilldownModal } from '../Modal/DrilldownModal';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 
 interface DataState<T> {
   data: T | null;
@@ -48,6 +58,12 @@ interface DataTable {
   value: number;
 }
 
+interface DataImportLog {
+  source_url: string;
+  file_name: string;
+  import_type: string;
+}
+
 interface InfoAgregatLulusan {
   jumlah_mahasiswa: number;
   rata_rata_rasio_penghasilan_terhadap_ump: number;
@@ -60,6 +76,7 @@ interface DashboardData {
   statusLulusan: DataState<ChartDataPie>;
   waktuTungguBekerja: DataState<ChartDataPie>;
   rentangPenghasilan: DataState<ChartDataBar>;
+  importLog?: DataState<DataImportLog[]>;
 }
 
 interface LulusanBekerjaUIProps {
@@ -205,7 +222,7 @@ export function LulusanBekerjaUI({
     statusLulusan,
     waktuTungguBekerja,
     rentangPenghasilan,
-    // persentaseStatusLulusan,
+    importLog,
   } = dashboardData;
 
   // Drilldown lokasi bekerja
@@ -360,7 +377,7 @@ export function LulusanBekerjaUI({
     };
 
     const dynamicDescription = activeReportingYear
-      ? `Data untuk lulusan tahun ${activeReportingYear}`
+      ? `Data untuk laporan tahun ${activeReportingYear}`
       : 'Data untuk semua tahun kelulusan';
 
     // eslint-disable-next-line prefer-const
@@ -465,16 +482,17 @@ export function LulusanBekerjaUI({
                   <span className="font-normal">Data : </span>
                   <span className="font-bold">
                     {initialActiveYear
-                      ? `Tahun Lulus ${initialActiveYear}`
+                      ? `Tahun Laporan ${initialActiveYear}`
                       : 'Semua Tahun'}
                   </span>
                 </div>
               ) : (
                 <QuickFilter
-                  label="Tahun Lulus"
-                  apiUrl="/api/public/filters/tahun-lulus"
+                  label="Tahun Laporan"
+                  apiUrl="/api/public/filters/tahun-laporan"
                   activeValue={activeReportingYear}
                   onValueChange={handleValueChange}
+                  showAllOption={false}
                 />
               )}
               <DashboardSettings
@@ -569,9 +587,79 @@ export function LulusanBekerjaUI({
                 searchPlaceholder="Cari berdasarkan Nama Perusahaan [ / ]"
               />
               {!isPublicView && (
-                <div className="flex flex-wrap gap-4">
-                  <ImportDialog type="graduates" />
-                  <ImportDialog type="tracer_studies" />
+                <div className="flex w-full items-center justify-end-safe mt-3 gap-4">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Import Data
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      className="bg-white text-black shadow-md border border-gray-200 rounded-md"
+                      align="end"
+                      sideOffset={8}
+                    >
+                      <DropdownMenuLabel className="font-medium text-blue-400">
+                        Pilih Jenis Data
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="p-0 my-2 mx-1"
+                      >
+                        <ImportDialog type="graduates" />
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="p-0 my-2 mx-1"
+                      >
+                        <ImportDialog type="tracer_studies" />
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {!importLog?.isLoading &&
+                    importLog?.data &&
+                    importLog?.data.length > 0 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                          >
+                            <FileText className="mr-2 h-4 w-4" />
+                            Lihat Sumber Data
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          className="bg-white text-black shadow-md border border-gray-200 rounded-md p-2"
+                          align="end"
+                          sideOffset={8}
+                        >
+                          <DropdownMenuLabel className="font-medium text-blue-400 mb-1">
+                            Sumber Data
+                          </DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {importLog?.data.map((link, index) => (
+                            <a
+                              key={index}
+                              href={link.source_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block"
+                            >
+                              <DropdownMenuItem className="hover:!bg-blue-300 cursor-pointer transition-colors text-blue-400 p-2 rounded-md text-sm mb-1 hover:!text-white">
+                                {link.file_name}
+                              </DropdownMenuItem>
+                            </a>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                 </div>
               )}
             </div>

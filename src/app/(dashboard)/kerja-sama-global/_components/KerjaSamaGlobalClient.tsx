@@ -94,6 +94,19 @@ export default function KerjaSamaGlobalClient({
     dedupingInterval: 10000,
   });
 
+  const apiUrlImportLog = `/api/import-logs/links-for-page?year=${
+    activeReportingYear || ''
+  }&page=${pageKey}`;
+  const {
+    data: resultImportLog,
+    error: errorImportLog,
+    isLoading: isLoadingImportLog,
+  } = useSWR(apiUrlImportLog, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 10000,
+  });
+
   const dashboardData = {
     infoAgregatKerjaSama: {
       data: resultInfoAgregatKerjaSama?.data,
@@ -119,6 +132,11 @@ export default function KerjaSamaGlobalClient({
       data: resultDistribusiJenisMitra?.data,
       isLoading: isLoadingDistribusiJenisMitra,
       error: errorDistribusiJenisMitra,
+    },
+    importLog: {
+      data: resultImportLog?.data,
+      isLoading: isLoadingImportLog,
+      error: errorImportLog,
     },
   };
 

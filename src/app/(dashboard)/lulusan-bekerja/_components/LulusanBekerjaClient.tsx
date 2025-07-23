@@ -3,16 +3,32 @@
 import useSWR from 'swr';
 import { LulusanBekerjaUI } from '@/components/dashboards/LulusanBekerjaUI';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
+import { useEffect } from 'react';
 
 const fetcher = (url: string | URL | Request) =>
   fetch(url).then((res) => res.json());
 
-export default function LulusanBekerjaClient() {
+export default function LulusanBekerjaClient({
+  filter,
+}: {
+  filter: number | null;
+}) {
   const pageKey = 'lulusan-bekerja';
 
+  // Set default filter
   const activeReportingYear = useDashboardSettingsStore(
     (state) => state.pageSettings[pageKey]?.activeReportingYear
   );
+
+  const setActiveYear = useDashboardSettingsStore(
+    (state) => state.setActiveReportingYear
+  );
+
+  useEffect(() => {
+    if (activeReportingYear === undefined && filter !== null) {
+      setActiveYear(pageKey, filter);
+    }
+  }, [filter, activeReportingYear, setActiveYear, pageKey]);
 
   // Fetch Data
   const apiUrlInfoAgregatLulusan = `/api/lulusan-bekerja/info-agregat-lulusan?year=${
@@ -81,6 +97,19 @@ export default function LulusanBekerjaClient() {
     dedupingInterval: 10000,
   });
 
+  const apiUrlImportLog = `/api/import-logs/links-for-page?year=${
+    activeReportingYear || ''
+  }&page=${pageKey}`;
+  const {
+    data: resultImportLog,
+    error: errorImportLog,
+    isLoading: isLoadingImportLog,
+  } = useSWR(apiUrlImportLog, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 10000,
+  });
+
   const dashboardData = {
     infoAgregatLulusan: {
       data: resultInfoAgregatLulusan?.data,
@@ -106,6 +135,11 @@ export default function LulusanBekerjaClient() {
       data: resultPenghasilan?.data,
       isLoading: isLoadingPenghasilan,
       error: errorPenghasilan,
+    },
+    importLog: {
+      data: resultImportLog?.data,
+      isLoading: isLoadingImportLog,
+      error: errorImportLog,
     },
   };
 

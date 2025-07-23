@@ -96,6 +96,19 @@ export default function PengalamanMahasiswaClient({
     dedupingInterval: 10000,
   });
 
+  const apiUrlImportLog = `/api/import-logs/links-for-page?year=${
+    activeReportingYear || ''
+  }&page=${pageKey}`;
+  const {
+    data: resultImportLog,
+    error: errorImportLog,
+    isLoading: isLoadingImportLog,
+  } = useSWR(apiUrlImportLog, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 10000,
+  });
+
   const dashboardData = {
     infoAgregatMahasiswa: {
       data: resultInfoAgregatMahasiswa?.data,
@@ -121,6 +134,11 @@ export default function PengalamanMahasiswaClient({
       data: resultKorelasiPrestasiDanIpk?.data,
       isLoading: isLoadingKorelasiPrestasiDanIpk,
       error: errorKorelasiPrestasiDanIpk,
+    },
+    importLog: {
+      data: resultImportLog?.data,
+      isLoading: isLoadingImportLog,
+      error: errorImportLog,
     },
   };
 

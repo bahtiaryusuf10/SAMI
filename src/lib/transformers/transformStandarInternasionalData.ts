@@ -7,5 +7,6 @@ export function transformStandarInternasionalData(rawData: { InfoAkreditasi: any
             isLoading: false,
             error: null,
         },
+        importLog: { data: [], isLoading: false, error: null },
     };
 }

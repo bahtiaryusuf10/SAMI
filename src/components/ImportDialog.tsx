@@ -9,12 +9,13 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { handleImportFile } from '@/lib/utils/handleImportFile';
 import { toast } from 'sonner';
-import { FileIcon, Loader2, X } from 'lucide-react';
+import { ExternalLink, FileIcon, Loader2, X } from 'lucide-react';
 import { importConfigurations } from '@/lib/utils/importConfig';
 import { Input } from './ui/input';
 
@@ -60,7 +61,6 @@ export default function ImportDialog({ type }: { type: string }) {
       return;
     }
 
-    // if ((type === 'students' || type === 'lecturers') && !year.trim()) {
     if (!year.trim() || !sourceUrl.trim()) {
       toast.error('Mohon isi tahun data terlebih dahulu.');
       return;
@@ -114,9 +114,29 @@ export default function ImportDialog({ type }: { type: string }) {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
-        <DialogTitle>{config.title}</DialogTitle>
-        <DialogDescription>{config.description}</DialogDescription>
-        {/* {(type === 'students' || type === 'lecturers') && ( */}
+        <DialogHeader>
+          <div className="flex items-center justify-between mr-5">
+            <DialogTitle>{config.title}</DialogTitle>
+
+            {config.urlTemplate && (
+              <a
+                href={config.urlTemplate}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-blue-400 hover:text-blue-400"
+                >
+                  <ExternalLink className="mt-1 h-4 w-4 text-blue-400 " />
+                  Template Dokumen
+                </Button>
+              </a>
+            )}
+          </div>
+          <DialogDescription>{config.description}</DialogDescription>
+        </DialogHeader>
         <Input
           type="number"
           placeholder="Masukkan tahun laporan (contoh: 2025)"
@@ -131,9 +151,6 @@ export default function ImportDialog({ type }: { type: string }) {
           onChange={(e) => setSourceUrl(e.target.value)}
           disabled={isLoading}
         />
-
-        {/* )} */}
-
         <div
           {...getRootProps()}
           className={cn(
