@@ -1,19 +1,3 @@
-// import ResetPasswordForm from '@/components/forms/ResetPasswordForm';
-
-// export default async function ResetPasswordPage({
-//   searchParams,
-// }: {
-//   searchParams: { code?: string };
-// }) {
-//   const { code: authCode } = await searchParams;
-
-//   return (
-//     <div className="min-h-screen flex items-center justify-center p-4 bg-blue-200">
-//       <ResetPasswordForm authCode={authCode} />
-//     </div>
-//   );
-// }
-
 'use client';
 
 import ResetPasswordForm from '@/components/forms/ResetPasswordForm';

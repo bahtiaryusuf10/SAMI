@@ -84,7 +84,7 @@ interface DashboardData {
   trenSkorCapaianKpi: DataState<ChartDataLine>;
 }
 
-interface HomePageUIProps {
+interface MainDashboardUIProps {
   pageKey: string;
   dashboardData: DashboardData;
   isPublicView?: boolean;
@@ -326,12 +326,12 @@ const kpiColumns: ColumnDef<DataTable>[] = [
   },
 ];
 
-export function HomePageUI({
+export function MainDashboardUI({
   pageKey,
   dashboardData,
   isPublicView = false,
   initialActiveYear = null,
-}: HomePageUIProps): JSX.Element {
+}: MainDashboardUIProps): JSX.Element {
   // Filter
   const zustandActiveYear =
     useDashboardSettingsStore(
@@ -357,8 +357,6 @@ export function HomePageUI({
     distribusiCapaianKpi,
     trenSkorCapaianKpi,
   } = dashboardData;
-
-  console.log(distribusiCapaianKpi);
 
   // Dashboard Settings
   const pageSettings = useDashboardSettingsStore(

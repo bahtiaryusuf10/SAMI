@@ -16,6 +16,7 @@ import { PieCustomLegend } from './PieCustomLegend';
 import { scaleOrdinal } from 'd3-scale';
 import { schemeAccent, schemePaired, schemePastel1 } from 'd3-scale-chromatic';
 import { ChartBreadcrumb } from './ChartBreadcrumb';
+import { useUser } from '@/contexts/UserContext';
 
 const schemeNivo = colorSchemes.nivo;
 
@@ -71,6 +72,9 @@ export const MyPieChart = ({
   breadcrumbs,
   onBreadcrumbClick,
 }: MyPieChartProps) => {
+  // Permission
+  const { can } = useUser();
+
   // Export
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -137,7 +141,7 @@ export const MyPieChart = ({
             <h2 className="text-lg font-semibold text-blue-400" data-no-drag>
               {title}
             </h2>
-            {drillDown && (
+            {drillDown && can('interact:charts') && (
               <Tooltip>
                 <TooltipTrigger>
                   <Info className="w-5 h-5 text-blue-300" />

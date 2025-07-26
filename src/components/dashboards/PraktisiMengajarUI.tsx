@@ -24,7 +24,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DashboardGridLayout } from '../DashboardGridLayout';
 import { MyBarChart } from '../charts/MyBarChart';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
-import { DrilldownModal } from '../Modal/DrilldownModal';
+import { DrilldownModal } from '../modal/DrilldownModal';
 import { Button } from '../ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import { normalizeTitleCase } from '@/lib/utils';
@@ -36,6 +36,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import { useUser } from '@/contexts/UserContext';
 
 interface DataState<T> {
   data: T | null;
@@ -247,6 +248,9 @@ export function PraktisiMengajarUI({
   isPublicView = false,
   initialActiveYear = null,
 }: PraktisiMengajarUIProps): JSX.Element {
+  // Permission
+  const { can } = useUser();
+
   // Filter
   const zustandActiveYear =
     useDashboardSettingsStore(
@@ -429,14 +433,17 @@ export function PraktisiMengajarUI({
       const chartState = dataStateMap[config.id];
       const chartProps = { ...(config.chartProps ?? {}) };
 
-      if (config.id === 'distribusi-jabatan-dosen') {
-        chartProps.onClick = handleDrilldownJabatanAkademik;
-        chartProps.breadcrumbs = jabatanAkademikBreadcrumbs;
-        chartProps.onBreadcrumbClick = handleJabatanAkademikBreadcrumbClick;
-      }
-
-      if (config.id === 'top5-mata-kuliah') {
-        chartProps.onClick = handleDrilldownMataKuliah;
+      if (can('interact:charts')) {
+        switch (config.id) {
+          case 'distribusi-jabatan-dosen':
+            chartProps.onClick = handleDrilldownJabatanAkademik;
+            chartProps.breadcrumbs = jabatanAkademikBreadcrumbs;
+            chartProps.onBreadcrumbClick = handleJabatanAkademikBreadcrumbClick;
+            break;
+          case 'top5-mata-kuliah':
+            chartProps.onClick = handleDrilldownMataKuliah;
+            break;
+        }
       }
 
       if (!chartState) return null;
@@ -470,6 +477,7 @@ export function PraktisiMengajarUI({
     activeReportingYear,
     activeJabatanAkademikData,
     isJabatanAkademikLoading,
+    can,
     pageKey,
     theme,
     showLabels,
@@ -623,43 +631,46 @@ export function PraktisiMengajarUI({
               />
               {!isPublicView && (
                 <div className="flex w-full items-center justify-end-safe mt-3 gap-4">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                  {can('import:data') && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Import Data
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        className="bg-white text-black shadow-md border border-gray-200 rounded-md"
+                        align="end"
+                        sideOffset={8}
                       >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Import Data
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      className="bg-white text-black shadow-md border border-gray-200 rounded-md"
-                      align="end"
-                      sideOffset={8}
-                    >
-                      <DropdownMenuLabel className="font-medium text-blue-400">
-                        Pilih Jenis Data
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onSelect={(e) => e.preventDefault()}
-                        className="p-0 my-2 mx-1"
-                      >
-                        <ImportDialog type="practitioner_teachings" />
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={(e) => e.preventDefault()}
-                        className="p-0 my-2 mx-1"
-                      >
-                        <ImportDialog type="field_experiences" />
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        <DropdownMenuLabel className="font-medium text-blue-400">
+                          Pilih Jenis Data
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          className="p-0 my-2 mx-1"
+                        >
+                          <ImportDialog type="practitioner_teachings" />
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          className="p-0 my-2 mx-1"
+                        >
+                          <ImportDialog type="field_experiences" />
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
 
                   {!importLog?.isLoading &&
                     importLog?.data &&
-                    importLog?.data.length > 0 && (
+                    importLog?.data.length > 0 &&
+                    can('view:source_url') && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button

@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
-import { Lightbulb, LogOut, Menu, RefreshCcw } from 'lucide-react';
+import { Lightbulb, Loader2, LogOut, Menu, RefreshCcw } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
 import { toast } from 'sonner';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { useState } from 'react';
+import { useUser } from '@/contexts/UserContext';
 
 export default function Navbar({
   onOpenSidebar,
@@ -17,6 +18,7 @@ export default function Navbar({
 }) {
   const supabase = createSupabaseBrowserClient();
   const [isLoading, setIsLoading] = useState(false);
+  const { user, can, isLoadingUser } = useUser();
 
   const handleLogout = async () => {
     try {
@@ -26,7 +28,7 @@ export default function Navbar({
         throw new Error(error.message);
       }
 
-      toast.success('Berhasil keluar!');
+      toast.success('Berhasil Keluar!');
 
       sessionStorage.removeItem('chatMessages');
 
@@ -91,55 +93,67 @@ export default function Navbar({
         <Menu className="w-5 h-5" />
       </Button>
       <div className="flex items-center gap-4">
-        <Popover>
-          <PopoverTrigger className="mt-0.5 bg-blue-300 rounded-2xl p-1 hover:bg-blue-200">
-            <Lightbulb className="w-5 h-5 text-white" />
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-56 space-y-3">
-            <div className="space-y-2">
-              <h4 className="leading-none font-semibold">Panduan Import</h4>
-              <ul className="list-decimal list-inside text-sm text-gray-600 leading-relaxed">
-                <li className="text-sm">
-                  Import data{' '}
-                  <span className="font-medium text-blue-400">Mahasiswa</span>
-                </li>
-                <li className="text-sm">
-                  Import data{' '}
-                  <span className="font-medium text-blue-400">Mata Kuliah</span>
-                </li>
-                <li className="text-sm">
-                  Import data{' '}
-                  <span className="font-medium text-blue-400">Dosen</span>
-                </li>
-              </ul>
-              <p className="text-xs text-gray-500 italic mt-3">
-                Pastikan urutan di atas diikuti untuk menghindari data tidak
-                sinkron.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full bg-blue-300 text-white hover:bg-blue-200 hover:text-white"
-              onClick={handleRefreshData}
-              disabled={isLoading}
-            >
-              <RefreshCcw className="w-4 h-4 mr-2" />
-              Perbarui Data
-            </Button>
-          </PopoverContent>
-        </Popover>
+        {can('import:data') && (
+          <Popover>
+            <PopoverTrigger className="mt-0.5 bg-blue-300 rounded-2xl p-1 hover:bg-blue-200">
+              <Lightbulb className="w-5 h-5 text-white" />
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-56 space-y-3">
+              <div className="space-y-2">
+                <h4 className="leading-none font-semibold">Panduan Import</h4>
+                <ul className="list-decimal list-inside text-sm text-gray-600 leading-relaxed">
+                  <li className="text-sm">
+                    Import data{' '}
+                    <span className="font-medium text-blue-400">Mahasiswa</span>
+                  </li>
+                  <li className="text-sm">
+                    Import data{' '}
+                    <span className="font-medium text-blue-400">
+                      Mata Kuliah
+                    </span>
+                  </li>
+                  <li className="text-sm">
+                    Import data{' '}
+                    <span className="font-medium text-blue-400">Dosen</span>
+                  </li>
+                </ul>
+                <p className="text-xs text-gray-500 italic mt-3">
+                  Pastikan urutan di atas diikuti untuk menghindari data tidak
+                  sinkron.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full bg-blue-300 text-white hover:bg-blue-200 hover:text-white"
+                onClick={handleRefreshData}
+                disabled={isLoading}
+              >
+                <RefreshCcw className="w-4 h-4 mr-2" />
+                Perbarui Data
+              </Button>
+            </PopoverContent>
+          </Popover>
+        )}
         <Avatar>
           <AvatarImage src="https://github.com/shadcn.png" />
           <AvatarFallback>MA</AvatarFallback>
         </Avatar>
         <div className="flex flex-col gap-y-1">
-          <span className="text-sm leading-3 font-medium text-white">
-            Maikel
-          </span>
-          <span className="text-[12px] text-gray-300 text-left">
-            Administrator
-          </span>
+          {isLoadingUser ? (
+            <div className="flex items-center justify-center">
+              <Loader2 className="h-5 w-5 animate-spin text-white" />
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1">
+              <span className="text-sm leading-3 font-medium text-white">
+                {user?.full_name}
+              </span>
+              <span className="text-[12px] text-gray-300 text-left">
+                {user?.roles?.description || ''}
+              </span>
+            </div>
+          )}
         </div>
         <Link href={'/auth'}>
           <Button

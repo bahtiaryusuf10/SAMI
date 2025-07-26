@@ -6,8 +6,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { useDashboardContext } from '@/contexts/DashboardContext';
+import { useUser } from '@/contexts/UserContext';
 import { Download, FileSpreadsheet, Settings2 } from 'lucide-react';
-// import { SelectControl } from './SelectControl';
 
 interface ScatterPlotSettingsProps {
   onExportPng: () => void;
@@ -18,6 +19,12 @@ export function ScatterPlotSettings({
   onExportPng,
   onExportXls,
 }: ScatterPlotSettingsProps) {
+  // Permission
+  const { can } = useUser();
+  const isPublicView = useDashboardContext();
+
+  if (isPublicView.isPublicView || !can('export:data')) return null;
+
   return (
     <Popover>
       <PopoverTrigger asChild>

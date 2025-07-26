@@ -41,7 +41,7 @@ export default function LulusanBekerjaClient({
   } = useSWR(apiUrlInfoAgregatLulusan, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000, // 15 minutes
     // refreshInterval: 300000, // auto-update (re-fetch) after 5 minutes
   });
 
@@ -55,7 +55,7 @@ export default function LulusanBekerjaClient({
   } = useSWR(apiUrlLokasiBekerja, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlStatusLulusan = `/api/lulusan-bekerja/status-lulusan?year=${
@@ -68,7 +68,7 @@ export default function LulusanBekerjaClient({
   } = useSWR(apiUrlStatusLulusan, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlWaktuTungguBekerja = `/api/lulusan-bekerja/waktu-tunggu-bekerja?year=${
@@ -81,7 +81,7 @@ export default function LulusanBekerjaClient({
   } = useSWR(apiUrlWaktuTungguBekerja, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlPenghasilan = `/api/lulusan-bekerja/rentang-penghasilan?year=${
@@ -94,7 +94,7 @@ export default function LulusanBekerjaClient({
   } = useSWR(apiUrlPenghasilan, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlImportLog = `/api/import-logs/links-for-page?year=${
@@ -107,7 +107,7 @@ export default function LulusanBekerjaClient({
   } = useSWR(apiUrlImportLog, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const dashboardData = {

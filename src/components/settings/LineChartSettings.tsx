@@ -9,6 +9,8 @@ import {
 import { ChartSpecificSettings } from '@/stores/dashboardSettings';
 import { Download, FileSpreadsheet, Settings2 } from 'lucide-react';
 import { SwitchControl } from './SwtichControl';
+import { useUser } from '@/contexts/UserContext';
+import { useDashboardContext } from '@/contexts/DashboardContext';
 // import { SelectControl } from './SelectControl';
 
 interface LineChartSettingsProps {
@@ -29,7 +31,12 @@ export function LineChartSettings({
   onExportPng,
   onExportXls,
 }: LineChartSettingsProps) {
+  // Permission
+  const { can } = useUser();
+  const isPublicView = useDashboardContext();
+
   const enableArea = settings.enableArea || false;
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -43,36 +50,42 @@ export function LineChartSettings({
       </PopoverTrigger>
       <PopoverContent className="w-56 bg-white" align="end" data-no-drag>
         <div className="space-y-3">
+          {/* {can('interact:charts') && ( */}
           <div className="flex justify-between items-center">
             <SwitchControl
               label="Show Area"
               checked={enableArea}
               onCheckedChange={(newEnableArea) =>
-                setChartSetting(chartInstanceId, { enableArea: newEnableArea })
+                setChartSetting(chartInstanceId, {
+                  enableArea: newEnableArea,
+                })
               }
             />
           </div>
-          <div className="pt-2 border-t border-gray-200">
-            <h4 className="text-sm font-medium">Export</h4>
-            <div className="grid gap-1 mt-1">
-              <Button
-                variant="ghost"
-                className="w-full justify-between font-normal hover:text-blue-400 hover:font-medium"
-                onClick={onExportPng}
-              >
-                PNG
-                <Download className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-between font-normal hover:text-blue-400 hover:font-medium"
-                onClick={onExportXls}
-              >
-                XLSX
-                <FileSpreadsheet className="h-4 w-4" />
-              </Button>
+          {/* )} */}
+          {!isPublicView.isPublicView && can('export:data') && (
+            <div className="pt-2 border-t border-gray-200">
+              <h4 className="text-sm font-medium">Export</h4>
+              <div className="grid gap-1 mt-1">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between font-normal hover:text-blue-400 hover:font-medium"
+                  onClick={onExportPng}
+                >
+                  PNG
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between font-normal hover:text-blue-400 hover:font-medium"
+                  onClick={onExportXls}
+                >
+                  XLSX
+                  <FileSpreadsheet className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </PopoverContent>
     </Popover>

@@ -25,7 +25,7 @@ import { MyPieChart } from '../charts/MyPieChart';
 import { Button } from '../ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
-import { DrilldownModal } from '../Modal/DrilldownModal';
+import { DrilldownModal } from '../modal/DrilldownModal';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Badge } from '../ui/badge';
 import {
@@ -36,6 +36,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import { useUser } from '@/contexts/UserContext';
 
 interface DataState<T> {
   data: T | null;
@@ -385,6 +386,9 @@ export function AktivitasDosenUI({
   isPublicView = false,
   initialActiveYear = null,
 }: AktivitasDosenUIProps): JSX.Element {
+  // Permission
+  const { can } = useUser();
+
   // Filter
   const zustandActiveYear =
     useDashboardSettingsStore(
@@ -552,12 +556,15 @@ export function AktivitasDosenUI({
       const chartState = dataStateMap[config.id];
       const chartProps = { ...(config.chartProps ?? {}) };
 
-      if (config.id === 'distribusi-persentase-aktivitas-dosen') {
-        chartProps.onClick = handleDrilldownDosen;
-      }
-
-      if (config.id === 'sumber-dana-penelitian-pkm') {
-        chartProps.onClick = handleDrilldownPenelitianPkm;
+      if (can('interact:charts')) {
+        switch (config.id) {
+          case 'distribusi-persentase-aktivitas-dosen':
+            chartProps.onClick = handleDrilldownDosen;
+            break;
+          case 'sumber-dana-penelitian-pkm':
+            chartProps.onClick = handleDrilldownPenelitianPkm;
+            break;
+        }
       }
 
       if (!chartState) return null;
@@ -588,6 +595,7 @@ export function AktivitasDosenUI({
     distribusiMembinaLomba,
     sumberDanaPenelitianPkm,
     activeReportingYear,
+    can,
     pageKey,
     theme,
     showLabels,
@@ -708,81 +716,88 @@ export function AktivitasDosenUI({
                   {chartChildren}
                 </DashboardGridLayout>
               </div>
-              <DrilldownModal
-                isOpen={dataPenelitianPkm !== null}
-                onClose={() => {
-                  setDataPenelitianPkm(null);
-                  setSelectedSumberDana(null);
-                }}
-                title={`Daftar Penelitian & Pengabdian`}
-                description={`Berikut adalah daftar penelitian & pengabdian untuk sumber ${selectedSumberDana}.`}
-                columns={fundSourceColumns}
-                data={dataPenelitianPkm}
-                isLoading={isDrilldownPenelitianPkmLoading}
-                onExport={handleExportDrilldownData}
-                initialPageSize={5}
-                searchPlaceholder="Cari berdasarkan Sumber Dana atau Judul [ / ]"
-              />
-              <DrilldownModal
-                isOpen={dataDosen !== null}
-                onClose={() => {
-                  setDataDosen(null);
-                  setSelectedTipeAktivitas(null);
-                }}
-                title={`Daftar Dosen Beraktivitas`}
-                description={`Berikut adalah daftar dosen yang melakukan aktivitas ${selectedTipeAktivitas}.`}
-                columns={externalActivityColumns}
-                data={dataDosen}
-                isLoading={isDrilldownDosenLoading}
-                onExport={handleExportDrilldownData}
-                initialPageSize={10}
-                searchPlaceholder="Cari berdasarkan Nama Dosen atau NIDN/NIDK [ / ]"
-              />
+              {can('interact:charts') && (
+                <>
+                  <DrilldownModal
+                    isOpen={dataPenelitianPkm !== null}
+                    onClose={() => {
+                      setDataPenelitianPkm(null);
+                      setSelectedSumberDana(null);
+                    }}
+                    title={`Daftar Penelitian & Pengabdian`}
+                    description={`Berikut adalah daftar penelitian & pengabdian untuk sumber ${selectedSumberDana}.`}
+                    columns={fundSourceColumns}
+                    data={dataPenelitianPkm}
+                    isLoading={isDrilldownPenelitianPkmLoading}
+                    onExport={handleExportDrilldownData}
+                    initialPageSize={5}
+                    searchPlaceholder="Cari berdasarkan Sumber Dana atau Judul [ / ]"
+                  />
+                  <DrilldownModal
+                    isOpen={dataDosen !== null}
+                    onClose={() => {
+                      setDataDosen(null);
+                      setSelectedTipeAktivitas(null);
+                    }}
+                    title={`Daftar Dosen Beraktivitas`}
+                    description={`Berikut adalah daftar dosen yang melakukan aktivitas ${selectedTipeAktivitas}.`}
+                    columns={externalActivityColumns}
+                    data={dataDosen}
+                    isLoading={isDrilldownDosenLoading}
+                    onExport={handleExportDrilldownData}
+                    initialPageSize={10}
+                    searchPlaceholder="Cari berdasarkan Nama Dosen atau NIDN/NIDK [ / ]"
+                  />
+                </>
+              )}
               {!isPublicView && (
                 <div className="flex w-full items-center justify-end-safe mt-3 gap-4">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                  {can('import:data') && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Import Data
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        className="bg-white text-black shadow-md border border-gray-200 rounded-md"
+                        align="end"
+                        sideOffset={8}
                       >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Import Data
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      className="bg-white text-black shadow-md border border-gray-200 rounded-md"
-                      align="end"
-                      sideOffset={8}
-                    >
-                      <DropdownMenuLabel className="font-medium text-blue-400">
-                        Pilih Jenis Data
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onSelect={(e) => e.preventDefault()}
-                        className="p-0 my-2 mx-1"
-                      >
-                        <ImportDialog type="detasering_activities" />
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={(e) => e.preventDefault()}
-                        className="p-0 my-2 mx-1"
-                      >
-                        <ImportDialog type="teach_activities" />
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={(e) => e.preventDefault()}
-                        className="p-0 my-2 mx-1"
-                      >
-                        <ImportDialog type="research_services" />
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        <DropdownMenuLabel className="font-medium text-blue-400">
+                          Pilih Jenis Data
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          className="p-0 my-2 mx-1"
+                        >
+                          <ImportDialog type="detasering_activities" />
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          className="p-0 my-2 mx-1"
+                        >
+                          <ImportDialog type="teach_activities" />
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          className="p-0 my-2 mx-1"
+                        >
+                          <ImportDialog type="research_services" />
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
 
                   {!importLog?.isLoading &&
                     importLog?.data &&
-                    importLog?.data.length > 0 && (
+                    importLog?.data.length > 0 &&
+                    can('view:source_url') && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button

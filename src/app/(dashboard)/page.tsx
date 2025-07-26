@@ -1,12 +1,12 @@
 import { getDefaultFilter } from '@/lib/utils/defaultFilter';
-import HomePageClient from './_components/HomePageClient';
+import MainDashboardClient from './_components/MainDashboardClient';
 
 export const revalidate = 600; // Cache page for 10 minute
 
-export default async function HomePage() {
+export default async function MainPage() {
   const defaultFilter = await getDefaultFilter(
     '/api/public/filters/tahun-laporan'
   );
 
-  return <HomePageClient filter={defaultFilter} />;
+  return <MainDashboardClient filter={defaultFilter} />;
 }

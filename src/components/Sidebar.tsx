@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { Separator } from './ui/separator';
 import {
@@ -12,8 +12,29 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
+import { useUser } from '@/contexts/UserContext';
 
-const sidebarItems = [
+type SidebarChild = {
+  label: string;
+  iconImage: string;
+  href: string;
+};
+
+type SidebarItem = {
+  label: string;
+  iconImage: string;
+  permission?: string;
+} & (
+  | { isDropdown?: false; href: string; children?: never }
+  | { isDropdown: true; href?: never; children: SidebarChild[] }
+);
+
+type SidebarSection = {
+  title: string;
+  items: SidebarItem[];
+};
+
+const sidebarItems: SidebarSection[] = [
   {
     title: 'MAIN',
     items: [
@@ -76,16 +97,37 @@ const sidebarItems = [
         iconImage: '/person.png',
         label: 'Mahasiswa',
         href: '/mahasiswa',
+        permission: 'view:data_master',
       },
       {
         iconImage: '/person.png',
         label: 'Dosen',
         href: '/dosen',
+        permission: 'view:data_master',
       },
       {
         iconImage: '/program-studi.png',
         label: 'Mata Kuliah',
         href: '/mata-kuliah',
+        permission: 'view:data_master',
+      },
+      {
+        label: 'Kelola Akun',
+        iconImage: '/kelola-akun.png',
+        isDropdown: true,
+        permission: 'view:user_management',
+        children: [
+          {
+            iconImage: '/person.png',
+            label: 'Akun',
+            href: '/kelola-akun/akun',
+          },
+          {
+            iconImage: '/role.png',
+            label: 'Hak Akses',
+            href: '/kelola-akun/hak-akses',
+          },
+        ],
       },
     ],
   },
@@ -98,6 +140,30 @@ export default function Sidebar({
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
+    {}
+  );
+  const { can, isLoadingUser } = useUser();
+
+  const filteredSidebarItems = useMemo(() => {
+    if (isLoadingUser) return [];
+
+    return sidebarItems.reduce((acc, section) => {
+      const visibleItems = section.items.filter((item) => {
+        if (!item.permission) {
+          return true;
+        }
+
+        return can(item.permission);
+      });
+
+      if (visibleItems.length > 0) {
+        acc.push({ ...section, items: visibleItems });
+      }
+
+      return acc;
+    }, [] as SidebarSection[]);
+  }, [can, isLoadingUser]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -113,6 +179,13 @@ export default function Sidebar({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const toggleDropdown = (label: string) => {
+    setOpenDropdowns((prev) => ({
+      ...prev,
+      [label]: !prev[label],
+    }));
+  };
 
   // sm:	640px
   // md:	768px
@@ -169,7 +242,7 @@ export default function Sidebar({
         )}
 
         <div className={`text-sm ${collapsed ? 'px-3' : 'px-4'}`}>
-          {sidebarItems.map((section, index) => (
+          {filteredSidebarItems.map((section, index) => (
             <div className="flex flex-col gap-1" key={section.title}>
               {!collapsed && (
                 <span className="mb-1 mt-6 text-gray-400 text-xs font-semibold">
@@ -178,11 +251,86 @@ export default function Sidebar({
               )}
 
               {section.items.map((item, itemIndex) => {
-                const isActive = pathname === item.href;
+                if (item.isDropdown && !can('view:user_management')) {
+                  return null;
+                }
 
+                if (item.isDropdown) {
+                  return (
+                    <div key={item.label}>
+                      <button
+                        onClick={() => toggleDropdown(item.label)}
+                        className={`flex items-center w-full gap-3 py-2 rounded-md transition-all ${
+                          collapsed ? 'justify-center' : 'px-2 ml-1'
+                        } hover:bg-gray-100 text-gray-500 font-light`}
+                      >
+                        <Image
+                          src={item.iconImage}
+                          alt={item.label}
+                          width={20}
+                          height={20}
+                          className="cursor-pointer"
+                        />
+                        {!collapsed && (
+                          <>
+                            <span>{item.label}</span>
+                            <ChevronDown
+                              className={`ml-auto transition-transform ${
+                                openDropdowns[item.label]
+                                  ? 'rotate-180 text-blue-400'
+                                  : ''
+                              }`}
+                              size={16}
+                            />
+                          </>
+                        )}
+                      </button>
+
+                      {openDropdowns[item.label] &&
+                        (isLoadingUser ? (
+                          <div className="flex justify-center items-center py-4">
+                            <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
+                          </div>
+                        ) : (
+                          item.children.map((child) => {
+                            const childIsActive = pathname === child.href;
+                            return (
+                              <Link
+                                href={child.href}
+                                key={child.label}
+                                className={`flex items-center gap-3 mt-1 py-2 rounded-md transition-all ${
+                                  collapsed
+                                    ? 'justify-center'
+                                    : 'pl-8 pr-2 ml-1'
+                                } ${
+                                  childIsActive
+                                    ? 'bg-gray-100 text-blue-400 font-semibold'
+                                    : 'hover:bg-gray-100 text-gray-500 font-light'
+                                }`}
+                              >
+                                <Image
+                                  src={child.iconImage}
+                                  alt={child.label}
+                                  width={20}
+                                  height={20}
+                                  className="cursor-pointer"
+                                />
+                                {!collapsed && <span>{child.label}</span>}
+                                {childIsActive && !collapsed && (
+                                  <div className="ml-auto rounded-sm h-5 w-1 bg-blue-400"></div>
+                                )}
+                              </Link>
+                            );
+                          })
+                        ))}
+                    </div>
+                  );
+                }
+
+                const isActive = pathname === item.href;
                 return (
                   <Link
-                    href={item.href}
+                    href={item.href!}
                     key={item.label}
                     className={`flex items-center gap-3 py-2 rounded-md transition-all ${
                       collapsed ? 'justify-center' : 'px-2 ml-1'

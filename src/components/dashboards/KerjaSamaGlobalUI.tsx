@@ -26,7 +26,7 @@ import { MyBarChart } from '../charts/MyBarChart';
 import { Button } from '../ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
-import { DrilldownModal } from '../Modal/DrilldownModal';
+import { DrilldownModal } from '../modal/DrilldownModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +35,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import { useUser } from '@/contexts/UserContext';
 
 interface DataState<T> {
   data: T | null;
@@ -278,6 +279,9 @@ export function KerjaSamaGlobalUI({
   isPublicView = false,
   initialActiveYear = null,
 }: KerjaSamaGlobalUIProps): JSX.Element {
+  // Permission
+  const { can } = useUser();
+
   // Filter
   const zustandActiveYear =
     useDashboardSettingsStore(
@@ -387,8 +391,10 @@ export function KerjaSamaGlobalUI({
       const chartState = dataStateMap[config.id];
       const chartProps = { ...(config.chartProps ?? {}) };
 
-      if (config.id === 'distribusi-status-kerja-sama') {
-        chartProps.onClick = handleDrilldownKerjaSama;
+      if (can('interact:charts')) {
+        if (config.id === 'distribusi-status-kerja-sama') {
+          chartProps.onClick = handleDrilldownKerjaSama;
+        }
       }
 
       if (!chartState) return null;
@@ -419,6 +425,7 @@ export function KerjaSamaGlobalUI({
     distribusiTingkatKerjaSama,
     distribusiJenisMitra,
     activeReportingYear,
+    can,
     pageKey,
     theme,
     showLabels,
@@ -550,37 +557,40 @@ export function KerjaSamaGlobalUI({
               />
               {!isPublicView && (
                 <div className="flex w-full items-center justify-end-safe mt-3 gap-4">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                  {can('import:data') && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Import Data
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        className="bg-white text-black shadow-md border border-gray-200 rounded-md"
+                        align="end"
+                        sideOffset={8}
                       >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Import Data
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      className="bg-white text-black shadow-md border border-gray-200 rounded-md"
-                      align="end"
-                      sideOffset={8}
-                    >
-                      <DropdownMenuLabel className="font-medium text-blue-400">
-                        Pilih Jenis Data
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onSelect={(e) => e.preventDefault()}
-                        className="p-0 my-2 mx-1"
-                      >
-                        <ImportDialog type="cooperations" />
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        <DropdownMenuLabel className="font-medium text-blue-400">
+                          Pilih Jenis Data
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          className="p-0 my-2 mx-1"
+                        >
+                          <ImportDialog type="cooperations" />
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
 
                   {!importLog?.isLoading &&
                     importLog?.data &&
-                    importLog?.data.length > 0 && (
+                    importLog?.data.length > 0 &&
+                    can('view:source_url') && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button

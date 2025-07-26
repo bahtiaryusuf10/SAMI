@@ -25,7 +25,7 @@ import { DashboardProvider } from '@/contexts/DashboardContext';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
 import { QuickFilter } from '@/components/settings/QuickFilter';
 import { ColumnDef } from '@tanstack/react-table';
-import { DrilldownModal } from '../Modal/DrilldownModal';
+import { DrilldownModal } from '../modal/DrilldownModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +34,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import { useUser } from '@/contexts/UserContext';
 
 interface DataState<T> {
   data: T | null;
@@ -198,6 +199,9 @@ export function LulusanBekerjaUI({
   isPublicView = false,
   initialActiveYear = null,
 }: LulusanBekerjaUIProps): JSX.Element {
+  // Permission
+  const { can } = useUser();
+
   // Filter
   const zustandActiveYear =
     useDashboardSettingsStore(
@@ -414,12 +418,15 @@ export function LulusanBekerjaUI({
       const chartState = dataStateMap[config.id];
       const chartProps = { ...(config.chartProps ?? {}) };
 
-      if (config.id === 'lokasi-bekerja') {
-        chartProps.onClick = handleDrilldownLokasi;
-      }
-
-      if (config.id === 'rentang-penghasilan') {
-        chartProps.onClick = handleDrilldownPenghasilan;
+      if (can('interact:charts')) {
+        switch (config.id) {
+          case 'lokasi-bekerja':
+            chartProps.onClick = handleDrilldownLokasi;
+            break;
+          case 'rentang-penghasilan':
+            chartProps.onClick = handleDrilldownPenghasilan;
+            break;
+        }
       }
 
       if (!chartState) return null;
@@ -449,16 +456,17 @@ export function LulusanBekerjaUI({
     statusLulusan,
     rentangPenghasilan,
     waktuTungguBekerja,
-    penghasilanBreadcrumbs,
     activeReportingYear,
+    penghasilanBreadcrumbs,
+    handlePenghasilanBreadcrumbClick,
     activePenghasilanData,
     isPenghasilanLoading,
+    can,
     pageKey,
     theme,
     showLabels,
     handleDrilldownLokasi,
     handleDrilldownPenghasilan,
-    handlePenghasilanBreadcrumbClick,
   ]);
 
   return (
@@ -588,43 +596,46 @@ export function LulusanBekerjaUI({
               />
               {!isPublicView && (
                 <div className="flex w-full items-center justify-end-safe mt-3 gap-4">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                  {can('import:data') && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Import Data
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        className="bg-white text-black shadow-md border border-gray-200 rounded-md"
+                        align="end"
+                        sideOffset={8}
                       >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Import Data
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      className="bg-white text-black shadow-md border border-gray-200 rounded-md"
-                      align="end"
-                      sideOffset={8}
-                    >
-                      <DropdownMenuLabel className="font-medium text-blue-400">
-                        Pilih Jenis Data
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onSelect={(e) => e.preventDefault()}
-                        className="p-0 my-2 mx-1"
-                      >
-                        <ImportDialog type="graduates" />
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={(e) => e.preventDefault()}
-                        className="p-0 my-2 mx-1"
-                      >
-                        <ImportDialog type="tracer_studies" />
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        <DropdownMenuLabel className="font-medium text-blue-400">
+                          Pilih Jenis Data
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          className="p-0 my-2 mx-1"
+                        >
+                          <ImportDialog type="graduates" />
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          className="p-0 my-2 mx-1"
+                        >
+                          <ImportDialog type="tracer_studies" />
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
 
                   {!importLog?.isLoading &&
                     importLog?.data &&
-                    importLog?.data.length > 0 && (
+                    importLog?.data.length > 0 &&
+                    can('view:source_url') && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button

@@ -41,7 +41,7 @@ export default function AktivitasDosenClient({
   } = useSWR(apiUrlInfoAgregatAktivitasDosen, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlDistribusiPersentaseAktivitasDosen = `/api/aktivitas-dosen/distribusi-persentase-aktivitas-dosen?year=${
@@ -54,7 +54,7 @@ export default function AktivitasDosenClient({
   } = useSWR(apiUrlDistribusiPersentaseAktivitasDosen, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlDistribusiAktivitasDosen = `/api/aktivitas-dosen/distribusi-aktivitas-dosen?year=${
@@ -67,7 +67,7 @@ export default function AktivitasDosenClient({
   } = useSWR(apiUrlDistribusiAktivitasDosen, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlDistribusiMembinaLomba = `/api/aktivitas-dosen/distribusi-membina-lomba?year=${
@@ -80,7 +80,7 @@ export default function AktivitasDosenClient({
   } = useSWR(apiUrlDistribusiMembinaLomba, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlSumberDanaPenelitianPkm = `/api/aktivitas-dosen/sumber-dana-penelitian-pkm?year=${
@@ -93,7 +93,7 @@ export default function AktivitasDosenClient({
   } = useSWR(apiUrlSumberDanaPenelitianPkm, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlImportLog = `/api/import-logs/links-for-page?year=${
@@ -106,7 +106,7 @@ export default function AktivitasDosenClient({
   } = useSWR(apiUrlImportLog, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const dashboardData = {

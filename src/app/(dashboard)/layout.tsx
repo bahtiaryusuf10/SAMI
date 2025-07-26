@@ -7,6 +7,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { useState } from 'react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { UserProvider } from '@/contexts/UserContext';
 
 export default function DashboardLayout({
   children,
@@ -16,7 +17,7 @@ export default function DashboardLayout({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <>
+    <UserProvider>
       <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
         <SheetContent side="left" className="p-0 w-48 rounded-lg shadow-md">
           <VisuallyHidden>
@@ -42,6 +43,6 @@ export default function DashboardLayout({
           </footer>
         </div>
       </div>
-    </>
+    </UserProvider>
   );
 }
