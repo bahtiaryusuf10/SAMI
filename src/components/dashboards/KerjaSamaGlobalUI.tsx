@@ -26,7 +26,7 @@ import { MyBarChart } from '../charts/MyBarChart';
 import { Button } from '../ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
-import { DrilldownModal } from '../modal/DrilldownModal';
+import { DrilldownModal } from '../modals/DrilldownModal';
 import {
   DropdownMenu,
   DropdownMenuContent,

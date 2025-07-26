@@ -23,7 +23,7 @@ import { MyPieChart } from '../charts/MyPieChart';
 import { Button } from '../ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
-import { DrilldownModal } from '../modal/DrilldownModal';
+import { DrilldownModal } from '../modals/DrilldownModal';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Badge } from '../ui/badge';
 import { useUser } from '@/contexts/UserContext';

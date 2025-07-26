@@ -25,7 +25,7 @@ import { DashboardProvider } from '@/contexts/DashboardContext';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
 import { QuickFilter } from '@/components/settings/QuickFilter';
 import { ColumnDef } from '@tanstack/react-table';
-import { DrilldownModal } from '../modal/DrilldownModal';
+import { DrilldownModal } from '../modals/DrilldownModal';
 import {
   DropdownMenu,
   DropdownMenuContent,

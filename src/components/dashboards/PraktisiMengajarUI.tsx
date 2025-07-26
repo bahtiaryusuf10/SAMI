@@ -24,7 +24,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DashboardGridLayout } from '../DashboardGridLayout';
 import { MyBarChart } from '../charts/MyBarChart';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
-import { DrilldownModal } from '../modal/DrilldownModal';
+import { DrilldownModal } from '../modals/DrilldownModal';
 import { Button } from '../ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import { normalizeTitleCase } from '@/lib/utils';

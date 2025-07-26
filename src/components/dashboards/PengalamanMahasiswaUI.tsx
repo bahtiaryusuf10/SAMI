@@ -26,7 +26,7 @@ import { MyScatterPlot } from '../charts/MyScatterPlot';
 import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '../ui/button';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
-import { DrilldownModal } from '../modal/DrilldownModal';
+import { DrilldownModal } from '../modals/DrilldownModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
