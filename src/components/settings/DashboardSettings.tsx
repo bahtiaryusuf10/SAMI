@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Paintbrush } from 'lucide-react';
 import { type ColorSchemeId } from '@nivo/colors';
+import { useUser } from '@/contexts/UserContext';
 
 interface DashboardSettingsProps {
   pageKey: string;
@@ -39,6 +40,11 @@ export function DashboardSettings({
   setPageTheme,
   setPageShowLabels,
 }: DashboardSettingsProps) {
+  // Permission
+  const { can } = useUser();
+
+  if (!can('interact:charts')) return null;
+
   return (
     <Popover>
       <PopoverTrigger asChild>

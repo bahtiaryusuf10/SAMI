@@ -39,7 +39,7 @@ export default function KerjaSamaGlobalClient({
   } = useSWR(apiUrlInfoAgregatKerjaSama, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlTrenKerjaSamaPerTahun = `/api/kerja-sama-global/tren-kerja-sama-per-tahun?year=${
@@ -52,7 +52,7 @@ export default function KerjaSamaGlobalClient({
   } = useSWR(apiUrlTrenKerjaSamaPerTahun, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlDistribusiStatusKerjaSama = `/api/kerja-sama-global/distribusi-status-kerja-sama?year=${
@@ -65,7 +65,7 @@ export default function KerjaSamaGlobalClient({
   } = useSWR(apiUrlDistribusiStatusKerjaSama, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlDistribusiTingkatKerjaSama = `/api/kerja-sama-global/distribusi-tingkat-kerja-sama?year=${
@@ -78,7 +78,7 @@ export default function KerjaSamaGlobalClient({
   } = useSWR(apiUrlDistribusiTingkatKerjaSama, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlDistribusiJenisMitra = `/api/kerja-sama-global/distribusi-jenis-mitra?year=${
@@ -91,7 +91,7 @@ export default function KerjaSamaGlobalClient({
   } = useSWR(apiUrlDistribusiJenisMitra, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlImportLog = `/api/import-logs/links-for-page?year=${
@@ -104,7 +104,7 @@ export default function KerjaSamaGlobalClient({
   } = useSWR(apiUrlImportLog, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const dashboardData = {

@@ -41,7 +41,7 @@ export default function PengalamanMahasiswaClient({
   } = useSWR(apiUrlInfoAgregatMahasiswa, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlPrestasiMahasiswa = `/api/pengalaman-mahasiswa/prestasi-mahasiswa?year=${
@@ -54,7 +54,7 @@ export default function PengalamanMahasiswaClient({
   } = useSWR(apiUrlPrestasiMahasiswa, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlTop5MitraMbkm = `/api/pengalaman-mahasiswa/top5-mitra-mbkm?year=${
@@ -67,7 +67,7 @@ export default function PengalamanMahasiswaClient({
   } = useSWR(apiUrlTop5MitraMbkm, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlDistribusiMbkm = `/api/pengalaman-mahasiswa/distribusi-mbkm?year=${
@@ -80,7 +80,7 @@ export default function PengalamanMahasiswaClient({
   } = useSWR(apiUrlDistribusiMbkm, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlKorelasiPrestasiDanIpk = `/api/pengalaman-mahasiswa/korelasi-prestasi-dan-ipk?year=${
@@ -93,7 +93,7 @@ export default function PengalamanMahasiswaClient({
   } = useSWR(apiUrlKorelasiPrestasiDanIpk, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlImportLog = `/api/import-logs/links-for-page?year=${
@@ -106,7 +106,7 @@ export default function PengalamanMahasiswaClient({
   } = useSWR(apiUrlImportLog, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const dashboardData = {

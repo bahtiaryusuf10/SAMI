@@ -41,7 +41,7 @@ export default function PraktisiMengajarClient({
   } = useSWR(apiUrlInfoAgregatPraktisi, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlDistribusiJabatanDosen = `/api/praktisi-mengajar/distribusi-jabatan-dosen?year=${
@@ -54,7 +54,7 @@ export default function PraktisiMengajarClient({
   } = useSWR(apiUrlDistribusiJabatanDosen, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlTop5MataKuliah = `/api/praktisi-mengajar/top5-mata-kuliah-praktisi-mengajar?year=${
@@ -67,7 +67,7 @@ export default function PraktisiMengajarClient({
   } = useSWR(apiUrlTop5MataKuliah, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlDistribusiPerusahaan = `/api/praktisi-mengajar/distribusi-perusahaan-praktisi-mengajar?year=${
@@ -80,7 +80,7 @@ export default function PraktisiMengajarClient({
   } = useSWR(apiUrlDistribusiPerusahaan, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlSertifikasiProfesi = `/api/praktisi-mengajar/sertifikasi-profesi-dosen-tetap?year=${
@@ -93,7 +93,7 @@ export default function PraktisiMengajarClient({
   } = useSWR(apiUrlSertifikasiProfesi, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlImportLog = `/api/import-logs/links-for-page?year=${
@@ -106,7 +106,7 @@ export default function PraktisiMengajarClient({
   } = useSWR(apiUrlImportLog, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const dashboardData = {

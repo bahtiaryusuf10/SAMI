@@ -16,6 +16,7 @@ import { BarCustomLegend } from './BarCustomLegend';
 import { normalizeTitleCase } from '@/lib/utils';
 import { ChartBreadcrumb } from './ChartBreadcrumb';
 import Draggable from 'react-draggable';
+import { useUser } from '@/contexts/UserContext';
 
 interface MyBarChartProps {
   pageKey: string;
@@ -64,6 +65,9 @@ export const MyBarChart = ({
   breadcrumbs,
   onBreadcrumbClick,
 }: MyBarChartProps) => {
+  // Permission
+  const { can } = useUser();
+
   const [hiddenKeys, setHiddenKeys] = useState<Record<string, boolean>>({});
 
   const handleLegendClick = (key: string) => {
@@ -130,7 +134,7 @@ export const MyBarChart = ({
             <h2 className="text-lg font-semibold text-blue-400" data-no-drag>
               {title}
             </h2>
-            {drillDown && (
+            {drillDown && can('interact:charts') && (
               <Tooltip>
                 <TooltipTrigger>
                   <Info className="w-5 h-5 text-blue-300" />

@@ -16,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import { useUser } from '@/contexts/UserContext';
 
 interface DataState<T> {
   data: T | null;
@@ -78,7 +79,7 @@ const studentColumns: ColumnDef<Mahasiswa>[] = [
     accessorKey: 'name',
     header: ({ column }) => {
       return (
-        <div className="text-left w-[210px]">
+        <div className="text-center">
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
@@ -92,7 +93,7 @@ const studentColumns: ColumnDef<Mahasiswa>[] = [
     cell: ({ row }) => {
       return (
         <div
-          className="text-left truncate w-[210px]"
+          className="text-left whitespace-normal break-words line-clamp-2"
           title={row.getValue('name')}
         >
           {row.getValue('name')}
@@ -202,6 +203,9 @@ export function MahasiswaUI({
   data,
   initialActiveYear = null,
 }: MahasiswaUIProps): JSX.Element {
+  // Permission
+  const { can } = useUser();
+
   // Filter
   const activeReportingYear =
     useDashboardSettingsStore(
@@ -267,37 +271,40 @@ export function MahasiswaUI({
               </div>
               {!isPublicView && (
                 <div className="flex w-full items-center justify-end-safe mt-3 gap-4">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                  {can('import:data') && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Import Data
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        className="bg-white text-black shadow-md border border-gray-200 rounded-md"
+                        align="end"
+                        sideOffset={8}
                       >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Import Data
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      className="bg-white text-black shadow-md border border-gray-200 rounded-md"
-                      align="end"
-                      sideOffset={8}
-                    >
-                      <DropdownMenuLabel className="font-medium text-blue-400">
-                        Pilih Jenis Data
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onSelect={(e) => e.preventDefault()}
-                        className="p-0 my-2 mx-1"
-                      >
-                        <ImportDialog type="students" />
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        <DropdownMenuLabel className="font-medium text-blue-400">
+                          Pilih Jenis Data
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          className="p-0 my-2 mx-1"
+                        >
+                          <ImportDialog type="students" />
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
 
                   {!importLog?.isLoading &&
                     importLog?.data &&
-                    importLog?.data.length > 0 && (
+                    importLog?.data.length > 0 &&
+                    can('view:source_url') && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button

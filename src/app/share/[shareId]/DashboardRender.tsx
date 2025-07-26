@@ -18,6 +18,18 @@ export async function DashboardRenderer({
 }: DashboardRendererProps) {
   const renderDashboard = async () => {
     switch (dashboardId) {
+      case 'main-dashboard': {
+        const dashboard = dashboardComponents['main-dashboard'];
+        const rawData = await dashboard.fetchData(filter);
+        const transformedData = dashboard.transformData(rawData);
+
+        return (
+          <dashboard.component
+            {...commonProps}
+            dashboardData={transformedData}
+          />
+        );
+      }
       case 'lulusan-bekerja': {
         const dashboard = dashboardComponents['lulusan-bekerja'];
         const rawData = await dashboard.fetchData(filter);

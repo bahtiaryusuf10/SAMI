@@ -35,7 +35,7 @@ export default function DosenClient({ filter }: { filter: number | null }) {
   } = useSWR(apiUrlDosen, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
     // refreshInterval: 300000, // auto-update (re-fetch) after 5 minutes
   });
 
@@ -49,7 +49,7 @@ export default function DosenClient({ filter }: { filter: number | null }) {
   } = useSWR(apiUrlImportLog, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const data = {

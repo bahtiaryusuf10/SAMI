@@ -23,9 +23,10 @@ import { MyPieChart } from '../charts/MyPieChart';
 import { Button } from '../ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
-import { DrilldownModal } from '../Modal/DrilldownModal';
+import { DrilldownModal } from '../modal/DrilldownModal';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Badge } from '../ui/badge';
+import { useUser } from '@/contexts/UserContext';
 
 interface DataState<T> {
   data: T | null;
@@ -280,6 +281,9 @@ export function KelasKolaboratifUI({
   isPublicView = false,
   initialActiveYear = null,
 }: KelasKolaboratifUIProps): JSX.Element {
+  // Permission
+  const { can } = useUser();
+
   // Filter
   const zustandActiveYear =
     useDashboardSettingsStore(
@@ -471,12 +475,15 @@ export function KelasKolaboratifUI({
       const chartState = dataStateMap[config.id];
       const chartProps = { ...(config.chartProps ?? {}) };
 
-      if (config.id === 'distribusi-case-project') {
-        chartProps.onClick = handleDrilldownMataKuliah;
-      }
-
-      if (config.id === 'distribusi-jenis-mata-kuliah') {
-        chartProps.onClick = handleDrilldownJenisMataKuliah;
+      if (can('interact:charts')) {
+        switch (config.id) {
+          case 'distribusi-case-project':
+            chartProps.onClick = handleDrilldownMataKuliah;
+            break;
+          case 'distribusi-jenis-mata-kuliah':
+            chartProps.onClick = handleDrilldownJenisMataKuliah;
+            break;
+        }
       }
 
       if (!chartState) return null;
@@ -511,6 +518,7 @@ export function KelasKolaboratifUI({
     handleJenisMataKuliahBreadcrumbClick,
     activeJenisMataKuliahData,
     isJenisMataKuliahLoading,
+    can,
     pageKey,
     theme,
     showLabels,

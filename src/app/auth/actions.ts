@@ -37,7 +37,7 @@ export async function login(data: LoginSchema) {
   }
 
   revalidatePath('/', 'layout');
-  return { success: 'Berhasil masuk!' };
+  return { success: 'Berhasil Masuk!' };
 }
 
 // Register
@@ -52,6 +52,9 @@ export async function register(data: RegisterSchema) {
     email: data.email,
     password: data.password,
     options: {
+      data: {
+        full_name: data.fullName,
+      },
       emailRedirectTo: `${process.env.NEXT_LOCAL_SITE_URL}/auth/callback`,
     },
   });

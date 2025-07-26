@@ -10,6 +10,8 @@ import { Download, FileSpreadsheet, Settings2 } from 'lucide-react';
 import { ChartSpecificSettings } from '@/stores/dashboardSettings';
 import { SelectControl } from './SelectControl';
 import { SwitchControl } from './SwtichControl';
+import { useUser } from '@/contexts/UserContext';
+import { useDashboardContext } from '@/contexts/DashboardContext';
 
 interface BarChartSettingsProps {
   chartInstanceId: string;
@@ -44,9 +46,10 @@ export function BarChartSettings({
   const layout = settings.layout || 'vertical';
   const mode = settings.groupMode || 'grouped';
   const sortByValue = settings.sortByValue || false;
-  // const isPublicView = useDashboardContext();
+  const isPublicView = useDashboardContext();
 
-  // console.log('bar settings : ', isPublicView.isPublicView);
+  // Permission
+  const { can } = useUser();
 
   return (
     <Popover>
@@ -61,6 +64,8 @@ export function BarChartSettings({
       </PopoverTrigger>
       <PopoverContent className="w-56 bg-white" align="end" data-no-drag>
         <div className="space-y-3">
+          {/* {can('interact:charts') && (
+            <> */}
           <div>
             <SelectControl
               label="Layout"
@@ -92,31 +97,37 @@ export function BarChartSettings({
               label="Sort by Value"
               checked={sortByValue}
               onCheckedChange={(newSortValue) =>
-                setChartSetting(chartInstanceId, { sortByValue: newSortValue })
+                setChartSetting(chartInstanceId, {
+                  sortByValue: newSortValue,
+                })
               }
             />
           </div>
-          <div className="pt-2 border-t border-gray-200">
-            <h4 className="text-sm font-medium">Export</h4>
-            <div className="grid gap-1 mt-1">
-              <Button
-                variant="ghost"
-                className="w-full justify-between font-normal hover:text-blue-400 hover:font-medium"
-                onClick={onExportPng}
-              >
-                PNG
-                <Download className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-between font-normal hover:text-blue-400 hover:font-medium"
-                onClick={onExportXls}
-              >
-                XLSX
-                <FileSpreadsheet className="h-4 w-4" />
-              </Button>
+          {/* </>
+          )} */}
+          {!isPublicView.isPublicView && can('export:data') && (
+            <div className="pt-2 border-t border-gray-200">
+              <h4 className="text-sm font-medium">Export</h4>
+              <div className="grid gap-1 mt-1">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between font-normal hover:text-blue-400 hover:font-medium"
+                  onClick={onExportPng}
+                >
+                  PNG
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between font-normal hover:text-blue-400 hover:font-medium"
+                  onClick={onExportXls}
+                >
+                  XLSX
+                  <FileSpreadsheet className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </PopoverContent>
     </Popover>

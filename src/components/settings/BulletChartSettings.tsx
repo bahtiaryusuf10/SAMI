@@ -6,6 +6,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { useDashboardContext } from '@/contexts/DashboardContext';
+import { useUser } from '@/contexts/UserContext';
 import { Download, FileSpreadsheet, Settings2 } from 'lucide-react';
 
 interface BulletChartSettingsProps {
@@ -17,6 +19,12 @@ export function BulletChartSettings({
   onExportPng,
   onExportXls,
 }: BulletChartSettingsProps) {
+  // Permission
+  const { can } = useUser();
+  const isPublicView = useDashboardContext();
+
+  if (isPublicView.isPublicView || !can('export:data')) return null;
+
   return (
     <Popover>
       <PopoverTrigger asChild>

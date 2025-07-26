@@ -22,9 +22,17 @@ import { KerjaSamaGlobalUI } from '@/components/dashboards/KerjaSamaGlobalUI';
 import { getKelasKolaboratifDashboardData } from './data/getKelasKolaboratifDashboardData';
 import { transformKelasKolaboratifData } from './transformers/transformKelasKolaboratifData';
 import { KelasKolaboratifUI } from '@/components/dashboards/KelasKolaboratifUI';
+import { getMainDashboardData } from './data/getMainDashboardData';
+import { MainDashboardUI } from '@/components/dashboards/MainDashboardUI';
+import { transformMainData } from './transformers/transformMainData';
 
 
 export const dashboardComponents = {
+  'main-dashboard': {
+    fetchData: getMainDashboardData,
+    transformData: transformMainData,
+    component: MainDashboardUI,
+  },
   'lulusan-bekerja': {
     fetchData: getLulusanBekerjaDashboardData,
     transformData: transformLulusanBekerjaData,

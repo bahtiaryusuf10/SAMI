@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Share2, Copy, Check, Loader2 } from 'lucide-react';
 import { Input } from './ui/input';
 import { toast } from 'sonner';
+import { useUser } from '@/contexts/UserContext';
 
 type ShareButtonProps = {
   dashboardId: string;
@@ -22,6 +23,9 @@ export function ShareButton({
   const [isLoading, setIsLoading] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
   const [hasCopied, setHasCopied] = useState(false);
+
+  // Permission
+  const { can, isLoadingUser } = useUser();
 
   const handleGetOrCreate = async () => {
     setIsLoading(true);
@@ -47,6 +51,10 @@ export function ShareButton({
     setTimeout(() => setHasCopied(false), 2000);
   };
 
+  if (isLoadingUser || !can('share:page')) {
+    return null;
+  }
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -63,7 +71,7 @@ export function ShareButton({
       </PopoverTrigger>
       <PopoverContent className="w-56 bg-white" align="end">
         <div className="space-y-2">
-          <h4 className="font-semibold">Share Dashboard</h4>
+          <h4 className="font-semibold">Bagikan Dashboard</h4>
           {shareUrl ? (
             <div className="flex items-center space-x-2">
               <Input value={shareUrl} readOnly />
@@ -89,10 +97,10 @@ export function ShareButton({
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : null}
               {isLoading
-                ? 'Creating...'
+                ? 'Membuat tautan...'
                 : shareUrl
-                ? 'Created link'
-                : 'Make a new public link'}
+                ? 'Tautan Dibuat'
+                : 'Buat tautan publik'}
             </Button>
           )}
         </div>

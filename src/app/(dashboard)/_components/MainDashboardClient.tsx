@@ -3,13 +3,19 @@
 import useSWR from 'swr';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
 import { useEffect } from 'react';
-import { HomePageUI } from '@/components/dashboards/HomePageUI';
+import { MainDashboardUI } from '@/components/dashboards/MainDashboardUI';
 
-const fetcher = (url: string | URL | Request) =>
-  fetch(url).then((res) => res.json());
+const fetcher = (url: string | URL | Request) => {
+  console.log(`[SWR Fetching] ${new Date().toLocaleTimeString()}: ${url}`);
+  return fetch(url).then((res) => res.json());
+};
 
-export default function HomePageClient({ filter }: { filter: number | null }) {
-  const pageKey = 'home-page';
+export default function MainDashboardClient({
+  filter,
+}: {
+  filter: number | null;
+}) {
+  const pageKey = 'main-dashboard';
 
   // Set default filter
   const activeReportingYear = useDashboardSettingsStore(
@@ -27,7 +33,7 @@ export default function HomePageClient({ filter }: { filter: number | null }) {
   }, [filter, activeReportingYear, setActiveYear, pageKey]);
 
   // Fetch Data
-  const apiUrlAgregatRingkasan = `/api/home-page/info-agregat-ringkasan?year=${
+  const apiUrlAgregatRingkasan = `/api/main-dashboard/info-agregat-ringkasan?year=${
     activeReportingYear || ''
   }`;
   const {
@@ -37,11 +43,11 @@ export default function HomePageClient({ filter }: { filter: number | null }) {
   } = useSWR(apiUrlAgregatRingkasan, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
     // refreshInterval: 300000, // auto-update (re-fetch) after 5 minutes
   });
 
-  const apiUrlInfoAgregatTambahan = `/api/home-page/info-agregat-tambahan?year=${
+  const apiUrlInfoAgregatTambahan = `/api/main-dashboard/info-agregat-tambahan?year=${
     activeReportingYear || ''
   }`;
   const {
@@ -51,10 +57,10 @@ export default function HomePageClient({ filter }: { filter: number | null }) {
   } = useSWR(apiUrlInfoAgregatTambahan, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
-  const apiUrlDetailCapaianKpi = `/api/home-page/detail-capaian-kpi?year=${
+  const apiUrlDetailCapaianKpi = `/api/main-dashboard/detail-capaian-kpi?year=${
     activeReportingYear || ''
   }`;
   const {
@@ -64,10 +70,10 @@ export default function HomePageClient({ filter }: { filter: number | null }) {
   } = useSWR(apiUrlDetailCapaianKpi, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
-  const apiUrlDistribusiCapaianKpi = `/api/home-page/distribusi-capaian-kpi?year=${
+  const apiUrlDistribusiCapaianKpi = `/api/main-dashboard/distribusi-capaian-kpi?year=${
     activeReportingYear || ''
   }`;
   const {
@@ -77,10 +83,10 @@ export default function HomePageClient({ filter }: { filter: number | null }) {
   } = useSWR(apiUrlDistribusiCapaianKpi, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
-  const apiUrlTrenSkorCapaianKpi = `/api/home-page/tren-skor-capaian-kpi?year=${
+  const apiUrlTrenSkorCapaianKpi = `/api/main-dashboard/tren-skor-capaian-kpi?year=${
     activeReportingYear || ''
   }`;
   const {
@@ -90,7 +96,7 @@ export default function HomePageClient({ filter }: { filter: number | null }) {
   } = useSWR(apiUrlTrenSkorCapaianKpi, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const dashboardData = {
@@ -121,5 +127,5 @@ export default function HomePageClient({ filter }: { filter: number | null }) {
     },
   };
 
-  return <HomePageUI pageKey={pageKey} dashboardData={dashboardData} />;
+  return <MainDashboardUI pageKey={pageKey} dashboardData={dashboardData} />;
 }

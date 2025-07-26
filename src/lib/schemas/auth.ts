@@ -18,6 +18,7 @@ export type LoginSchema = z.infer<typeof loginSchema>;
 // Register
 export const registerSchema = z
   .object({
+    fullName: z.string().min(1, 'Nama lengkap wajib diisi'),
     email: z.string().email({ message: 'Email tidak valid' }),
     password: z.string().min(6, { message: 'Minimal 6 karakter' }),
     confirmPassword: z.string().min(6, { message: 'Minimal 6 karakter' }),

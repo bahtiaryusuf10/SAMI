@@ -27,6 +27,7 @@ export function RegisterForm() {
   const form = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
+      fullName: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -60,6 +61,20 @@ export function RegisterForm() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-6 bg-white p-6 rounded-xl shadow w-75 lg:w-82 mx-auto"
       >
+        <FormField
+          control={form.control}
+          name="fullName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nama Lengkap</FormLabel>
+              <FormControl>
+                <Input type="text" placeholder="Maikel" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="email"

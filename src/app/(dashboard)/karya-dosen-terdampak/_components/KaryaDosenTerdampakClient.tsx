@@ -41,7 +41,7 @@ export default function KaryaDosenTerdampakClient({
   } = useSWR(apiUrlInfoAgregatKaryaDosen, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlDistribusiTingkatPublikasi = `/api/karya-dosen-terdampak/distribusi-tingkat-publikasi?year=${
@@ -54,7 +54,7 @@ export default function KaryaDosenTerdampakClient({
   } = useSWR(apiUrlDistribusiTingkatPublikasi, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlTrenPublikasiPerTahun = `/api/karya-dosen-terdampak/tren-publikasi-per-tahun?year=${
@@ -67,7 +67,7 @@ export default function KaryaDosenTerdampakClient({
   } = useSWR(apiUrlTrenPublikasiPerTahun, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlTrenSitasiPerDosen = `/api/karya-dosen-terdampak/tren-sitasi-per-dosen?year=${
@@ -80,7 +80,7 @@ export default function KaryaDosenTerdampakClient({
   } = useSWR(apiUrlTrenSitasiPerDosen, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlTop5DosenPublikasi = `/api/karya-dosen-terdampak/top5-dosen-publikasi-per-tahun?year=${
@@ -93,7 +93,7 @@ export default function KaryaDosenTerdampakClient({
   } = useSWR(apiUrlTop5DosenPublikasi, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlImportLog = `/api/import-logs/links-for-page?year=${
@@ -106,7 +106,7 @@ export default function KaryaDosenTerdampakClient({
   } = useSWR(apiUrlImportLog, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const dashboardData = {

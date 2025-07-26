@@ -41,7 +41,7 @@ export default function KelasKolaboratifClient({
   } = useSWR(apiUrlInfoAgregatKelasKolaboratif, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
     // refreshInterval: 300000, // auto-update (re-fetch) after 5 minutes
   });
 
@@ -55,7 +55,7 @@ export default function KelasKolaboratifClient({
   } = useSWR(apiUrlDistribusiCaseProject, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlTop5DosenCaseProject = `/api/kelas-kolaboratif/top5-dosen-case-project?year=${
@@ -68,7 +68,7 @@ export default function KelasKolaboratifClient({
   } = useSWR(apiUrlTop5DosenCaseProject, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlDistribusiJenisMataKuliah = `/api/kelas-kolaboratif/distribusi-jenis-mata-kuliah?year=${
@@ -81,7 +81,7 @@ export default function KelasKolaboratifClient({
   } = useSWR(apiUrlDistribusiJenisMataKuliah, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const apiUrlDistribusiMetodeMataKuliah = `/api/kelas-kolaboratif/distribusi-metode-mata-kuliah?year=${
@@ -94,7 +94,7 @@ export default function KelasKolaboratifClient({
   } = useSWR(apiUrlDistribusiMetodeMataKuliah, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10000,
+    dedupingInterval: 900000,
   });
 
   const dashboardData = {

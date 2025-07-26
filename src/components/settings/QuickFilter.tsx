@@ -32,7 +32,11 @@ export function QuickFilter({
   showAllOption = true,
 }: QuickFilterProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, isLoading: isOptionsLoading } = useSWR<any>(apiUrl, fetcher);
+  const { data, isLoading: isOptionsLoading } = useSWR<any>(apiUrl, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 600000,
+  });
 
   const options: Option[] = Array.isArray(data) ? data : data?.data;
   const isLoading = isParentLoading || isOptionsLoading;

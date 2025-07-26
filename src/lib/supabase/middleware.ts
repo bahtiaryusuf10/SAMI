@@ -27,6 +27,8 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
+  await supabase.auth.refreshSession();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -39,6 +41,15 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && !isPublicPath) {
     return NextResponse.redirect(new URL('/auth', request.url));
+
+  }
+  
+  if (user) {
+    const userRole = user.app_metadata.user_role;
+
+    if (!userRole && request.nextUrl.pathname !== '/pending-approval') {
+      return NextResponse.redirect(new URL('/pending-approval', request.url));
+    }
   }
 
   return response;
