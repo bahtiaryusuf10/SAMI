@@ -76,7 +76,7 @@ export default function ForgotPasswordForm() {
             <DialogTitle>Pulihkan Akun Anda</DialogTitle>
             <DialogDescription>
               Masukkan email Anda untuk menerima instruksi mengenai cara
-              memulihkan akun.
+              memulihkan akun melalui ganti kata sandi.
             </DialogDescription>
           </DialogHeader>
 

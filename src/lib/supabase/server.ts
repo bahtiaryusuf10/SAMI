@@ -15,15 +15,17 @@ export async function createSupabaseServerClient() {
         set(name: string, value: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value, ...options });
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (error) {
-            throw new Error(`Error set server cookies : ${error}`);
+            // throw new Error(`Error set server cookies : ${error}`);
           }
         },
         remove(name: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value: '', ...options });
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (error) {
-            throw new Error(`Error remove server cookies : ${error}`);
+            // throw new Error(`Error remove server cookies : ${error}`);
           }
         },
       },

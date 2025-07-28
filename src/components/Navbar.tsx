@@ -95,7 +95,7 @@ export default function Navbar({
       <div className="flex items-center gap-4">
         {can('import:data') && (
           <Popover>
-            <PopoverTrigger className="mt-0.5 bg-blue-300 rounded-2xl p-1 hover:bg-blue-200">
+            <PopoverTrigger className="mt-0.5 bg-blue-300 rounded-2xl p-1 hover:bg-blue-200 cursor-pointer">
               <Lightbulb className="w-5 h-5 text-white" />
             </PopoverTrigger>
             <PopoverContent align="end" className="w-56 space-y-3">
@@ -158,7 +158,7 @@ export default function Navbar({
         <Link href={'/auth'}>
           <Button
             variant="outline"
-            className="w-7 h-7 rounded-5 bg-red-500 hover:bg-red-400"
+            className="w-7 h-7 rounded-5 bg-red-500 hover:bg-red-400 cursor-pointer"
             onClick={handleLogout}
           >
             <LogOut className="h-5 w-5 text-white" />
