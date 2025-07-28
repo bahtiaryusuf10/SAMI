@@ -55,7 +55,7 @@ export async function register(data: RegisterSchema) {
       data: {
         full_name: data.fullName,
       },
-      emailRedirectTo: `${process.env.NEXT_LOCAL_SITE_URL}/auth/callback`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
     },
   });
 
@@ -77,7 +77,7 @@ export async function sendResetLink(data: ForgotPasswordSchema) {
 
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-    redirectTo: `${process.env.NEXT_LOCAL_SITE_URL}/reset-password`,
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
   });
 
   if (error) {

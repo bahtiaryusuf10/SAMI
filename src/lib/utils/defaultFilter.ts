@@ -8,7 +8,7 @@ export async function getDefaultFilter(
     ? { Cookie: cookieStore.toString() }
     : {};
 
-  const res = await fetch(`${process.env.NEXT_LOCAL_SITE_URL}${url}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}${url}`, {
     cache: 'no-store',
     headers,
   });

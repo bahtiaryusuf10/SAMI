@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function updateSession(request: NextRequest) {
+export async function updateSession(request: NextRequest) { // Movin to src/middleware.ts
   // eslint-disable-next-line prefer-const
   let response = NextResponse.next({
     request: {

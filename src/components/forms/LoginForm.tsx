@@ -130,7 +130,7 @@ export function LoginForm() {
               }
               className="text-red-600 text-xs font-medium hover:underline cursor-pointer"
             >
-              Lupa Password?
+              Lupa Kata Sandi?
             </p>
           </div>
 
