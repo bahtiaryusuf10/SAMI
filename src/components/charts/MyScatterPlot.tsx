@@ -37,10 +37,13 @@ export const MyScatterPlot = ({
     setHiddenKeys((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const visibleData = useMemo(
-    () => data.filter((series) => !hiddenKeys[series.id]),
-    [data, hiddenKeys]
-  );
+  const visibleData = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.filter((series) => !hiddenKeys[series.id]);
+  }, [data, hiddenKeys]);
 
   const getColor = useOrdinalColorScale({ scheme: colorScheme }, 'id');
 
@@ -143,7 +146,7 @@ export const MyScatterPlot = ({
             >
               <div ref={legendRef} className="absolute top-15 left-30 z-10">
                 <ScatterCustomLegend
-                  series={data.map((d) => ({
+                  series={(data || []).map((d) => ({
                     id: d.id,
                     label: d.id,
                     color: getColor({ id: d.id }),
