@@ -230,7 +230,8 @@ export function MataKuliahUI({
               ) : (
                 <QuickFilter
                   label="Tahun"
-                  apiUrl="/api/mata-kuliah/filter"
+                  // apiUrl="/api/mata-kuliah/filter"
+                  apiUrl="/api/public/filters/tahun-laporan"
                   activeValue={activeReportingYear}
                   onValueChange={handleValueChange}
                   showAllOption={false}

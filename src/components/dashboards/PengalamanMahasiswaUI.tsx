@@ -367,6 +367,19 @@ export function PengalamanMahasiswaUI({
 
       if (!chartState) return null;
 
+      let sanitizedData = [];
+      if (config.id === 'korelasi-prestasi-dan-ipk') {
+        sanitizedData = (chartState.data || []).map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (series: { data: any }) => ({
+            ...series,
+            data: series.data || [],
+          })
+        );
+      } else {
+        sanitizedData = chartState.data || [];
+      }
+
       return (
         <ChartComponent
           key={config.id}
@@ -375,7 +388,7 @@ export function PengalamanMahasiswaUI({
           isPercentage={config.isPercentage}
           drillDown={config.isDrillDown}
           description={dynamicDescription}
-          data={chartState.data || []}
+          data={sanitizedData}
           isLoading={chartState.isLoading}
           error={chartState.error}
           pageKey={pageKey}
