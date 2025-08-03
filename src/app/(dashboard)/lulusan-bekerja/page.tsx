@@ -5,7 +5,7 @@ export const revalidate = 600; // Cache page for 10 minute
 
 export default async function LulusanBekerjaPage() {
   const defaultFilter = await getDefaultFilter(
-    '/api/public/filters/tahun-laporan'
+    '/api/public/filters/tahun-laporan-by-tipe?types=tracer-studies,graduates'
   );
 
   return <LulusanBekerjaClient filter={defaultFilter} />;

@@ -3,13 +3,26 @@
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
-import { Lightbulb, Loader2, LogOut, Menu, RefreshCcw } from 'lucide-react';
+import {
+  HelpCircle,
+  // Lightbulb,
+  Loader2,
+  LogOut,
+  Menu,
+  RefreshCcw,
+} from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
 import { toast } from 'sonner';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { useState } from 'react';
 import { useUser } from '@/contexts/UserContext';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './ui/tooltip';
 
 export default function Navbar({
   onOpenSidebar,
@@ -94,46 +107,64 @@ export default function Navbar({
       </Button>
       <div className="flex items-center gap-4">
         {can('import:data') && (
-          <Popover>
-            <PopoverTrigger className="mt-0.5 bg-blue-300 rounded-2xl p-1 hover:bg-blue-200 cursor-pointer">
-              <Lightbulb className="w-5 h-5 text-white" />
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-56 space-y-3">
-              <div className="space-y-2">
-                <h4 className="leading-none font-semibold">Panduan Import</h4>
-                <ul className="list-decimal list-inside text-sm text-gray-600 leading-relaxed">
-                  <li className="text-sm">
-                    Import data{' '}
-                    <span className="font-medium text-blue-400">Mahasiswa</span>
-                  </li>
-                  <li className="text-sm">
-                    Import data{' '}
-                    <span className="font-medium text-blue-400">
-                      Mata Kuliah
-                    </span>
-                  </li>
-                  <li className="text-sm">
-                    Import data{' '}
-                    <span className="font-medium text-blue-400">Dosen</span>
-                  </li>
-                </ul>
-                <p className="text-xs text-gray-500 italic mt-3">
-                  Pastikan urutan di atas diikuti untuk menghindari data tidak
-                  sinkron.
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full bg-blue-300 text-white hover:bg-blue-200 hover:text-white"
-                onClick={handleRefreshData}
-                disabled={isLoading}
-              >
-                <RefreshCcw className="w-4 h-4 mr-2" />
-                Perbarui Data
-              </Button>
-            </PopoverContent>
-          </Popover>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <Popover>
+                    {/* <Lightbulb className="w-5 h-5 text-white" /> */}
+                    <PopoverTrigger className="mt-0.5 bg-blue-300 rounded-2xl p-1 hover:bg-blue-200 cursor-pointer">
+                      <HelpCircle className="w-5 h-5 text-white" />
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-56 space-y-3">
+                      <div className="space-y-2">
+                        <h4 className="leading-none font-semibold">
+                          Panduan Import
+                        </h4>
+                        <ul className="list-decimal list-inside text-sm text-gray-600 leading-relaxed">
+                          <li className="text-sm">
+                            Import data{' '}
+                            <span className="font-medium text-blue-400">
+                              Mahasiswa
+                            </span>
+                          </li>
+                          <li className="text-sm">
+                            Import data{' '}
+                            <span className="font-medium text-blue-400">
+                              Mata Kuliah
+                            </span>
+                          </li>
+                          <li className="text-sm">
+                            Import data{' '}
+                            <span className="font-medium text-blue-400">
+                              Dosen
+                            </span>
+                          </li>
+                        </ul>
+                        <p className="text-xs text-gray-500 italic mt-3">
+                          Pastikan urutan di atas diikuti untuk menghindari data
+                          tidak sinkron.
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full bg-blue-300 text-white hover:bg-blue-200 hover:text-white"
+                        onClick={handleRefreshData}
+                        disabled={isLoading}
+                      >
+                        <RefreshCcw className="w-4 h-4 mr-2" />
+                        Perbarui Data
+                      </Button>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p>Panduan Import</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )}
         <Avatar>
           <AvatarImage src="https://github.com/shadcn.png" />

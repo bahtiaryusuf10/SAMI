@@ -17,6 +17,7 @@ import { scaleOrdinal } from 'd3-scale';
 import { schemeAccent, schemePaired, schemePastel1 } from 'd3-scale-chromatic';
 import { ChartBreadcrumb } from './ChartBreadcrumb';
 import { useUser } from '@/contexts/UserContext';
+import { TargetInfo } from './TargetInfo';
 
 const schemeNivo = colorSchemes.nivo;
 
@@ -48,6 +49,7 @@ interface MyPieChartProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any;
   title: string;
+  targets?: Record<string, number>;
   type?: 'small' | 'medium' | 'large';
   isPercentage?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,6 +69,7 @@ export const MyPieChart = ({
   isLoading,
   error,
   title,
+  targets = {},
   isPercentage = false,
   onClick,
   breadcrumbs,
@@ -151,6 +154,7 @@ export const MyPieChart = ({
                 </TooltipContent>
               </Tooltip>
             )}
+            <TargetInfo targets={targets} />
           </div>
           {description && (
             <p className="text-xs text-gray-500 mt-1" data-no-drag>

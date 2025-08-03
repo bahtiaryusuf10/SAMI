@@ -31,7 +31,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { ChevronDown, Info, Loader2 } from 'lucide-react';
+import { ChevronDown, FileSpreadsheet, Info, Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
 interface MyDataTableMasterProps<TData> {
@@ -42,6 +42,7 @@ interface MyDataTableMasterProps<TData> {
   initialPageSize?: number;
   title?: string;
   description?: string;
+  onExport?: () => void;
 }
 
 export function MyDataTableMaster<TData>({
@@ -52,6 +53,7 @@ export function MyDataTableMaster<TData>({
   initialPageSize = 10,
   title = '',
   description = '',
+  onExport,
 }: MyDataTableMasterProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = React.useState('');
@@ -107,19 +109,33 @@ export function MyDataTableMaster<TData>({
     <div className="w-full">
       <div className="bg-white px-10 pt-7 pb-2 rounded-2xl">
         {title.trim() && (
-          <div className="flex flex-col mb-7 gap-1">
-            <div className="flex flex-row gap-2">
-              <p className="font-semibold text-xl text-blue-400">{title}</p>
-              <Tooltip>
-                <TooltipTrigger>
-                  <Info className="w-5 h-5 text-blue-300 mt-1" />
-                </TooltipTrigger>
-                <TooltipContent side="right" align="center" sideOffset={-2}>
-                  <p>Navigate to page in description link</p>
-                </TooltipContent>
-              </Tooltip>
+          <div className="flex flex-row justify-between">
+            <div className="flex flex-col mb-7 gap-1">
+              <div className="flex flex-row gap-2">
+                <p className="font-semibold text-xl text-blue-400">{title}</p>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="w-5 h-5 text-blue-300 mt-1" />
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="center" sideOffset={-2}>
+                    <p>Navigate to page in description link</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <p className="text-xs text-gray-500">{description}</p>
             </div>
-            <p className="text-xs text-gray-500">{description}</p>
+            <div>
+              {onExport && (
+                <Button
+                  variant="ghost"
+                  className="justify-between font-normal bg-gray-100 text-gray-400 hover:text-blue-400 rounded-full cursor-pointer"
+                  onClick={onExport}
+                >
+                  Export to XLSX
+                  <FileSpreadsheet className="h-4 w-4 ml-2" />
+                </Button>
+              )}
+            </div>
           </div>
         )}
         <div className="flex items-center mb-5">

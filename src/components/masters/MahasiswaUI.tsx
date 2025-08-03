@@ -251,8 +251,7 @@ export function MahasiswaUI({
               ) : (
                 <QuickFilter
                   label="Tahun"
-                  // apiUrl="/api/mahasiswa/filter"
-                  apiUrl="/api/public/filters/tahun-laporan"
+                  apiUrl="/api/mahasiswa/filter"
                   activeValue={activeReportingYear}
                   onValueChange={handleValueChange}
                   showAllOption={false}

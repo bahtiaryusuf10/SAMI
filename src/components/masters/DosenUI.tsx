@@ -234,8 +234,7 @@ export function DosenUI({
               ) : (
                 <QuickFilter
                   label="Tahun"
-                  // apiUrl="/api/dosen/filter"
-                  apiUrl="/api/public/filters/tahun-laporan"
+                  apiUrl="/api/dosen/filter"
                   activeValue={activeReportingYear}
                   onValueChange={handleValueChange}
                   showAllOption={false}
