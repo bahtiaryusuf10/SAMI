@@ -43,6 +43,11 @@ const sidebarItems: SidebarSection[] = [
         label: 'Dashboard',
         href: '/',
       },
+      {
+        iconImage: '/laporan.png',
+        label: 'Laporan AMI',
+        href: '/laporan-ami',
+      },
     ],
   },
   {

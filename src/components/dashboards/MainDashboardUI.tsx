@@ -29,6 +29,9 @@ import { MyBulletChart } from '../charts/MyBulletChart';
 import { useMemo } from 'react';
 import { DashboardGridLayout } from '../DashboardGridLayout';
 import { MyLineChart } from '../charts/MyLineChart';
+import { ExecutiveSummary } from '../ExecutiveSummary';
+import { exportAsXlsx } from '@/lib/utils/handleExportFile';
+import { toast } from 'sonner';
 
 interface DataState<T> {
   data: T | null;
@@ -116,7 +119,7 @@ const dashboardConfig: DashboardConfigItem[] = [
     type: 'small',
     component: MyLineChart,
     chartProps: {
-      axisLeftLegend: 'Persentase Capaian',
+      axisLeftLegend: 'Persentase Capaian (%)',
       axisBottomLegend: 'Tahun',
     },
   },
@@ -358,6 +361,14 @@ export function MainDashboardUI({
     trenSkorCapaianKpi,
   } = dashboardData;
 
+  const summaryData = {
+    infoAgregatRingkasan: infoAgregatRingkasan.data,
+    infoAgregatTambahan: infoAgregatTambahan.data,
+    detailCapaianKpi: detailCapaianKpi.data,
+    distribusiCapaianKpi: distribusiCapaianKpi.data,
+    trenSkorCapaianKpi: trenSkorCapaianKpi.data,
+  };
+
   // Dashboard Settings
   const pageSettings = useDashboardSettingsStore(
     (state) => state.pageSettings[pageKey]
@@ -372,6 +383,16 @@ export function MainDashboardUI({
   const setPageShowLabels = useDashboardSettingsStore(
     (state) => state.setPageShowLabels
   );
+
+  const handleExportTable = () => {
+    if (detailCapaianKpi?.data && detailCapaianKpi.data.length > 0) {
+      const fileName = `Ketercapaian Indikator Kinerja Utama (IKU)`;
+
+      exportAsXlsx(detailCapaianKpi.data, fileName, kpiColumns);
+    } else {
+      toast.error('Tidak ada data untuk diekspor.');
+    }
+  };
 
   // Chart Component
   const chartChildren = useMemo(() => {
@@ -510,8 +531,8 @@ export function MainDashboardUI({
                             )
                           : 0
                       }
-                      targetLabel="/ 50%"
-                      targetValue={50}
+                      targetLabel="/ 100%"
+                      targetValue={100}
                     />
                   </>
                 )}
@@ -643,8 +664,18 @@ export function MainDashboardUI({
                   initialPageSize={8}
                   title="Ketercapaian Indikator Kinerja Utama (IKU)"
                   description={`Data untuk tahun laporan ${activeReportingYear}`}
+                  onExport={handleExportTable}
                 />
               </div>
+              {!isPublicView && (
+                <div className="flex w-full items-start justify-end-safe px-2 mt-3 gap-2">
+                  <ExecutiveSummary
+                    pageKey={pageKey}
+                    dataForSummary={summaryData}
+                    activeReportingYear={activeReportingYear}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

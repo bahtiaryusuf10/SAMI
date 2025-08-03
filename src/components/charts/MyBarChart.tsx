@@ -17,6 +17,7 @@ import { normalizeTitleCase } from '@/lib/utils';
 import { ChartBreadcrumb } from './ChartBreadcrumb';
 import Draggable from 'react-draggable';
 import { useUser } from '@/contexts/UserContext';
+import { TargetInfo } from './TargetInfo';
 
 interface MyBarChartProps {
   pageKey: string;
@@ -35,6 +36,7 @@ interface MyBarChartProps {
   axisBottomLegend: string;
   axisLeftLegend: string;
   title: string;
+  targets?: Record<string, number>;
   type?: 'small' | 'medium' | 'large';
   layout?: 'vertical' | 'horizontal';
   grouped?: 'grouped' | 'stacked';
@@ -59,6 +61,7 @@ export const MyBarChart = ({
   axisBottomLegend,
   axisLeftLegend,
   title,
+  targets = {},
   layout: layoutFromProps,
   grouped: groupedFromProps,
   onClick,
@@ -144,6 +147,7 @@ export const MyBarChart = ({
                 </TooltipContent>
               </Tooltip>
             )}
+            <TargetInfo targets={targets} />
           </div>
           {description && (
             <p className="text-xs text-gray-500 mt-1" data-no-drag>

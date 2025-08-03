@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { useUser } from '@/contexts/UserContext';
+import { ExecutiveSummary } from '../ExecutiveSummary';
 
 interface DataState<T> {
   data: T | null;
@@ -99,6 +100,12 @@ interface DashboardConfigItem {
   chartProps?: Record<string, any>;
 }
 
+const graduateStatusTargets = {
+  Bekerja: 80,
+  'Studi Lanjut': 10,
+  Berwiraswasta: 10,
+};
+
 const dashboardConfig: DashboardConfigItem[] = [
   {
     id: 'lokasi-bekerja',
@@ -119,6 +126,9 @@ const dashboardConfig: DashboardConfigItem[] = [
     type: 'semiMedium',
     isPercentage: true,
     component: MyPieChart,
+    chartProps: {
+      targets: graduateStatusTargets,
+    },
   },
   {
     id: 'rentang-penghasilan',
@@ -228,6 +238,14 @@ export function LulusanBekerjaUI({
     rentangPenghasilan,
     importLog,
   } = dashboardData;
+
+  const summaryData = {
+    infoAgregatLulusan: infoAgregatLulusan.data,
+    lokasiBekerja: lokasiBekerja.data,
+    statusLulusan: statusLulusan.data,
+    waktuTungguBekerja: waktuTungguBekerja.data,
+    rentangPenghasilan: rentangPenghasilan.data,
+  };
 
   // Drilldown lokasi bekerja
   const [selectedLokasiBekerja, setSelectedLokasiBekerja] = useState<
@@ -497,7 +515,7 @@ export function LulusanBekerjaUI({
               ) : (
                 <QuickFilter
                   label="Tahun Laporan"
-                  apiUrl="/api/public/filters/tahun-laporan"
+                  apiUrl="/api/public/filters/tahun-laporan-by-tipe?types=tracer-studies,graduates"
                   activeValue={activeReportingYear}
                   onValueChange={handleValueChange}
                   showAllOption={false}
@@ -595,82 +613,91 @@ export function LulusanBekerjaUI({
                 searchPlaceholder="Cari berdasarkan Nama Perusahaan [ / ]"
               />
               {!isPublicView && (
-                <div className="flex w-full items-center justify-end-safe mt-3 gap-4">
-                  {can('import:data') && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
-                        >
-                          <Upload className="mr-2 h-4 w-4" />
-                          Import Data
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        className="bg-white text-black shadow-md border border-gray-200 rounded-md"
-                        align="end"
-                        sideOffset={8}
-                      >
-                        <DropdownMenuLabel className="font-medium text-blue-400">
-                          Pilih Jenis Data
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onSelect={(e) => e.preventDefault()}
-                          className="p-0 my-2 mx-1"
-                        >
-                          <ImportDialog type="graduates" />
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onSelect={(e) => e.preventDefault()}
-                          className="p-0 my-2 mx-1"
-                        >
-                          <ImportDialog type="tracer_studies" />
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-
-                  {!importLog?.isLoading &&
-                    importLog?.data &&
-                    importLog?.data.length > 0 &&
-                    can('view:source_url') && (
+                <div className="flex w-full items-start justify-end-safe px-2 mt-3 gap-2">
+                  <div className="flex items-center gap-2">
+                    {can('import:data') && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
                             variant="outline"
                             className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
                           >
-                            <FileText className="mr-2 h-4 w-4" />
-                            Lihat Sumber Data
+                            <Upload className="mr-2 h-4 w-4" />
+                            Import Data
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
-                          className="bg-white text-black shadow-md border border-gray-200 rounded-md p-2"
+                          className="bg-white text-black shadow-md border border-gray-200 rounded-md"
                           align="end"
                           sideOffset={8}
                         >
-                          <DropdownMenuLabel className="font-medium text-blue-400 mb-1">
-                            Sumber Data
+                          <DropdownMenuLabel className="font-medium text-blue-400">
+                            Pilih Jenis Data
                           </DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          {importLog?.data.map((link, index) => (
-                            <a
-                              key={index}
-                              href={link.source_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block"
-                            >
-                              <DropdownMenuItem className="hover:!bg-blue-300 cursor-pointer transition-colors text-blue-400 p-2 rounded-md text-sm mb-1 hover:!text-white">
-                                {link.file_name}
-                              </DropdownMenuItem>
-                            </a>
-                          ))}
+                          <DropdownMenuItem
+                            onSelect={(e) => e.preventDefault()}
+                            className="p-0 my-2 mx-1"
+                          >
+                            <ImportDialog type="graduates" />
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onSelect={(e) => e.preventDefault()}
+                            className="p-0 my-2 mx-1"
+                          >
+                            <ImportDialog type="tracer_studies" />
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
+
+                    {!importLog?.isLoading &&
+                      importLog?.data &&
+                      importLog?.data.length > 0 &&
+                      can('view:source_url') && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className="bg-white/20 text-white border-white/30 hover:bg-white/30 hover:text-white"
+                            >
+                              <FileText className="mr-2 h-4 w-4" />
+                              Lihat Sumber Data
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            className="bg-white text-black shadow-md border border-gray-200 rounded-md p-2"
+                            align="end"
+                            sideOffset={8}
+                          >
+                            <DropdownMenuLabel className="font-medium text-blue-400 mb-1">
+                              Sumber Data
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {importLog?.data.map((link, index) => (
+                              <a
+                                key={index}
+                                href={link.source_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block"
+                              >
+                                <DropdownMenuItem className="hover:!bg-blue-300 cursor-pointer transition-colors text-blue-400 p-2 rounded-md text-sm mb-1 hover:!text-white">
+                                  {link.file_name}
+                                </DropdownMenuItem>
+                              </a>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                  </div>
+                  <div>
+                    <ExecutiveSummary
+                      pageKey={pageKey}
+                      dataForSummary={summaryData}
+                      activeReportingYear={activeReportingYear}
+                    />
+                  </div>
                 </div>
               )}
             </div>

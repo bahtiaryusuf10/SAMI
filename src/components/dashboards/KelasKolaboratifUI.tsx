@@ -27,6 +27,7 @@ import { DrilldownModal } from '../modals/DrilldownModal';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Badge } from '../ui/badge';
 import { useUser } from '@/contexts/UserContext';
+import { ExecutiveSummary } from '../ExecutiveSummary';
 
 interface DataState<T> {
   data: T | null;
@@ -310,6 +311,14 @@ export function KelasKolaboratifUI({
     distribusiMetodeMataKuliah,
   } = dashboardData;
 
+  const summaryData = {
+    infoAgregatKelasKolaboratif: infoAgregatKelasKolaboratif.data,
+    distribusiCaseProject: distribusiCaseProject.data,
+    top5DosenCaseProject: top5DosenCaseProject.data,
+    distribusiJenisMataKuliah: distribusiJenisMataKuliah.data,
+    distribusiMetodeMataKuliah: distribusiMetodeMataKuliah.data,
+  };
+
   // Drilldown Mata Kuliah
   const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
   const [dataMataKuliah, setDataMataKuliah] = useState<DataTable[] | null>(
@@ -554,7 +563,7 @@ export function KelasKolaboratifUI({
               ) : (
                 <QuickFilter
                   label="Tahun Laporan"
-                  apiUrl="/api/public/filters/tahun-laporan"
+                  apiUrl="/api/public/filters/tahun-laporan-by-tipe?types=courses"
                   activeValue={activeReportingYear}
                   onValueChange={handleValueChange}
                   showAllOption={false}
@@ -649,6 +658,15 @@ export function KelasKolaboratifUI({
                 initialPageSize={5}
                 searchPlaceholder="Cari berdasarkan Kode Mata Kuliah atau Nama [ / ]"
               />
+              {!isPublicView && (
+                <div className="flex w-full items-start justify-end-safe px-2 mt-3 gap-2">
+                  <ExecutiveSummary
+                    pageKey={pageKey}
+                    dataForSummary={summaryData}
+                    activeReportingYear={activeReportingYear}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

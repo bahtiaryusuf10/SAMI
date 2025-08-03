@@ -33,11 +33,15 @@ interface DashboardState {
   reset: () => void;
 
   setActiveReportingYear: (pageKey: string, year: number | null) => void;
+
+  aiSummaries: Record<string, string>;
+  setAiSummary: (pageKey: string, year: number | null, summary: string) => void;
 }
 
 const initialState = {
   pageSettings: {},
   chartSettings: {},
+  aiSummaries: {},
 };
 
 export const useDashboardSettingsStore = create(
@@ -86,6 +90,12 @@ export const useDashboardSettingsStore = create(
           }
           state.pageSettings[pageKey].activeReportingYear = year;
         }),
+      setAiSummary: (pageKey, year, summary) =>
+        set((state) => {
+          const summaryKey = `${pageKey}_${year || 'all'}`;
+          state.aiSummaries[summaryKey] = summary;
+        }),
+        
     })),
     {
       name: 'dashboard-settings-storage',
