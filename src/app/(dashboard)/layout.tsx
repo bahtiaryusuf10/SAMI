@@ -5,9 +5,10 @@ import Sidebar from '@/components/Sidebar';
 import Footer from '@/components/Footer';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { DialogTitle } from '@radix-ui/react-dialog';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { UserProvider } from '@/contexts/UserContext';
+import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
 
 export default function DashboardLayout({
   children,
@@ -16,10 +17,17 @@ export default function DashboardLayout({
 }>) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
+  useEffect(() => {
+    useDashboardSettingsStore.persist.rehydrate();
+  }, []);
+
   return (
     <UserProvider>
       <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-        <SheetContent side="left" className="p-0 w-48 rounded-lg shadow-md">
+        <SheetContent
+          side="left"
+          className="p-0 w-48 rounded-r-lg shadow-md overflow-y-auto"
+        >
           <VisuallyHidden>
             <DialogTitle>Sidebar</DialogTitle>
           </VisuallyHidden>
@@ -31,11 +39,11 @@ export default function DashboardLayout({
         <div className="hidden sm:block bg-blue-200 p-3 flex-none">
           <Sidebar mobileSidebarOpen={mobileSidebarOpen} />
         </div>
-        <div className="flex-1 flex flex-col">
-          <div className="bg-blue-400 p-2 py-3 flex items-center justify-between sm:justify-end shadow-[0_2px_5px_rgba(0,0,0,0.15)] z-10">
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className="bg-blue-400 p-2 py-3 flex items-center justify-between sm:justify-end shadow-[0_2px_5px_rgba(0,0,0,0.15)] z-10 min-w-0">
             <Navbar onOpenSidebar={() => setMobileSidebarOpen(true)} />
           </div>
-          <main className="flex-1 overflow-y-auto p-4 bg-blue-400">
+          <main className="flex-1 overflow-y-auto p-4 bg-blue-400 min-w-0">
             {children}
           </main>
           <footer className="bg-blue-400 h-10 flex items-center shadow-[0_-2px_5px_rgba(0,0,0,0.15)]">

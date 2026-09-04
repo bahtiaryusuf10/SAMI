@@ -1,17 +1,16 @@
 'use client';
 
-// import BubbleChat from '@/components/forms/BubbleChat';
 import { useCallback, useMemo, useState, JSX } from 'react';
 import ImportDialog from '@/components/ImportDialog';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
 import { DashboardSettings } from '../settings/DashboardSettings';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { QuickFilter } from '../settings/QuickFilter';
 import { ShareButton } from '../ShareButton';
 import { MySingleValueChart } from '../charts/MySingleValueChart';
 import {
   AlertTriangle,
-  ArrowUpDown,
   BadgeCheck,
   Briefcase,
   FileText,
@@ -37,6 +36,7 @@ import {
 } from '../ui/dropdown-menu';
 import { useUser } from '@/contexts/UserContext';
 import { ExecutiveSummary } from '../ExecutiveSummary';
+import { SortableHeader } from '@/components/tables/SortableHeader';
 
 interface DataState<T> {
   data: T | null;
@@ -172,22 +172,14 @@ type DashboardId = (typeof dashboardConfig)[number]['id'];
 const achievementColumns: ColumnDef<DataTable>[] = [
   {
     accessorKey: 'name',
+    size: 250,
+    minSize: 160,
     header: ({ column }) => {
-      return (
-        <div className="text-left w-[250px]">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Nama Kompetisi
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      );
+      return <SortableHeader column={column} label="Nama Kompetisi" />;
     },
     cell: ({ row }) => (
       <div
-        className="text-left w-[250px] truncate"
+        className="text-left w-full truncate"
         title={row.getValue('name')}
       >
         {row.getValue('name')}
@@ -199,21 +191,22 @@ const achievementColumns: ColumnDef<DataTable>[] = [
   },
   {
     accessorKey: 'achievement',
+    size: 200,
+    minSize: 120,
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Pencapaian
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Pencapaian" />
       );
     },
     cell: ({ row }) => {
-      return <div className="text-center">{row.getValue('achievement')}</div>;
+      return (
+        <div
+          className="text-center truncate"
+          title={row.getValue('achievement')}
+        >
+          {row.getValue('achievement')}
+        </div>
+      );
     },
     meta: {
       displayName: 'Pencapaian',
@@ -223,15 +216,7 @@ const achievementColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'year',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Tahun
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Tahun" />
       );
     },
     cell: ({ row }) => {
@@ -435,52 +420,46 @@ export function PengalamanMahasiswaUI({
     <DashboardProvider isPublicView={isPublicView}>
       <>
         <div className="space-y-4">
-          <div className="flex w-full items-center justify-between px-2 pt-2 mb-8">
-            <div className="flex flex-col">
-              <h1 className="text-4xl font-semibold text-white">
-                Pengalaman Mahasiswa
-              </h1>
-              <div className="flex items-center mt-2 gap-1">
-                <p className=" text-white text-sm">
-                  IKU 2 Mahasiswa mendapat pengalaman di luar kampus.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {isPublicView ? (
-                <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
-                  <span className="font-normal">Data : </span>
-                  <span className="font-bold">
-                    {initialActiveYear
-                      ? `Tahun Laporan ${initialActiveYear}`
-                      : 'Semua Tahun'}
-                  </span>
-                </div>
-              ) : (
-                <QuickFilter
-                  label="Tahun Laporan"
-                  apiUrl="/api/public/filters/tahun-laporan-by-tipe?types=mbkms,certificates,achievements"
-                  activeValue={activeReportingYear}
-                  onValueChange={handleValueChange}
-                  showAllOption={false}
+          <PageHeader
+            title="Pengalaman Mahasiswa"
+            description="IKU 2 Mahasiswa mendapat pengalaman di luar kampus."
+            actions={
+              <>
+                {isPublicView ? (
+                  <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
+                    <span className="font-normal">Data : </span>
+                    <span className="font-bold">
+                      {initialActiveYear
+                        ? `Tahun Laporan ${initialActiveYear}`
+                        : 'Semua Tahun'}
+                    </span>
+                  </div>
+                ) : (
+                  <QuickFilter
+                    label="Tahun Laporan"
+                    apiUrl="/api/public/filters/tahun-laporan-by-tipe?types=mbkms,certificates,achievements"
+                    activeValue={activeReportingYear}
+                    onValueChange={handleValueChange}
+                    showAllOption={false}
+                  />
+                )}
+                <DashboardSettings
+                  pageKey={pageKey}
+                  theme={theme}
+                  showLabels={showLabels}
+                  setPageTheme={setPageTheme}
+                  setPageShowLabels={setPageShowLabels}
                 />
-              )}
-              <DashboardSettings
-                pageKey={pageKey}
-                theme={theme}
-                showLabels={showLabels}
-                setPageTheme={setPageTheme}
-                setPageShowLabels={setPageShowLabels}
-              />
-              {!isPublicView && (
-                <ShareButton
-                  dashboardId={pageKey}
-                  activeFilterValue={activeReportingYear}
-                  filterQueryParamName="year"
-                />
-              )}
-            </div>
-          </div>
+                {!isPublicView && (
+                  <ShareButton
+                    dashboardId={pageKey}
+                    activeFilterValue={activeReportingYear}
+                    filterQueryParamName="year"
+                  />
+                )}
+              </>
+            }
+          />
           <div className="px-2 py-0 flex flex-col gap-4 mb-8">
             <div className="w-full">
               <div className="flex flex-wrap gap-4">
@@ -555,11 +534,11 @@ export function PengalamanMahasiswaUI({
                 isLoading={isDrilldownPrestasiLoading}
                 onExport={handleExportDrilldownData}
                 initialPageSize={8}
-                searchPlaceholder="Cari berdasarkan Nama atau Pencapaian [ / ]"
+                searchPlaceholder="Cari Nama atau Pencapaian [ / ]"
               />
               {!isPublicView && (
-                <div className="flex w-full items-start justify-end-safe px-2 mt-3 gap-2">
-                  <div className="flex items-center gap-2">
+                <div className="flex w-full flex-col items-end gap-2 px-2 mt-3 sm:flex-row sm:items-start sm:justify-end-safe">
+                  <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
                     {can('import:data') && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -654,7 +633,6 @@ export function PengalamanMahasiswaUI({
             </div>
           </div>
         </div>
-        {/* {!isPublicView && <BubbleChat />} */}
       </>
     </DashboardProvider>
   );

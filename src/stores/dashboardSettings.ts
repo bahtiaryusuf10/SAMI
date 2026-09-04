@@ -100,6 +100,7 @@ export const useDashboardSettingsStore = create(
     {
       name: 'dashboard-settings-storage',
       storage: createJSONStorage(() => localStorage),
+      skipHydration: true,
     }
   )
 );

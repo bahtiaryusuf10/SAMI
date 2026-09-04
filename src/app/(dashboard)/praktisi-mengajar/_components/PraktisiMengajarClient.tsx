@@ -1,12 +1,8 @@
 'use client';
 
 import { PraktisiMengajarUI } from '@/components/dashboards/PraktisiMengajarUI';
-import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
-import { useEffect } from 'react';
-import useSWR from 'swr';
-
-const fetcher = (url: string | URL | Request) =>
-  fetch(url).then((res) => res.json());
+import { useReportingYearFilter } from '@/hooks/useReportingYearFilter';
+import { useApiData } from '@/hooks/useApiData';
 
 export default function PraktisiMengajarClient({
   filter,
@@ -14,132 +10,28 @@ export default function PraktisiMengajarClient({
   filter: number | null;
 }) {
   const pageKey = 'praktisi-mengajar';
-
-  // Set default filter
-  const activeReportingYear = useDashboardSettingsStore(
-    (state) => state.pageSettings[pageKey]?.activeReportingYear
-  );
-
-  const setActiveYear = useDashboardSettingsStore(
-    (state) => state.setActiveReportingYear
-  );
-
-  useEffect(() => {
-    if (activeReportingYear === undefined && filter !== null) {
-      setActiveYear(pageKey, filter);
-    }
-  }, [filter, activeReportingYear, setActiveYear, pageKey]);
-
-  // Fetch Data
-  const apiUrlInfoAgregatPraktisi = `/api/praktisi-mengajar/info-agregat-praktisi-mengajar?year=${
-    activeReportingYear || ''
-  }`;
-  const {
-    data: resultInfoAgregatPraktisi,
-    error: errorInfoAgregatPraktisi,
-    isLoading: isLoadingInfoAgregatPraktisi,
-  } = useSWR(apiUrlInfoAgregatPraktisi, fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 900000,
-  });
-
-  const apiUrlDistribusiJabatanDosen = `/api/praktisi-mengajar/distribusi-jabatan-dosen?year=${
-    activeReportingYear || ''
-  }`;
-  const {
-    data: resultDistribusiJabatanDosen,
-    error: errorDistribusiJabatanDosen,
-    isLoading: isLoadingDistribusiJabatanDosen,
-  } = useSWR(apiUrlDistribusiJabatanDosen, fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 900000,
-  });
-
-  const apiUrlTop5MataKuliah = `/api/praktisi-mengajar/top5-mata-kuliah-praktisi-mengajar?year=${
-    activeReportingYear || ''
-  }`;
-  const {
-    data: resultTop5MataKuliah,
-    error: errorTop5MataKuliah,
-    isLoading: isLoadingTop5MataKuliah,
-  } = useSWR(apiUrlTop5MataKuliah, fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 900000,
-  });
-
-  const apiUrlDistribusiPerusahaan = `/api/praktisi-mengajar/distribusi-perusahaan-praktisi-mengajar?year=${
-    activeReportingYear || ''
-  }`;
-  const {
-    data: resultDistribusiPerusahaan,
-    error: errorDistribusiPerusahaan,
-    isLoading: isLoadingDistribusiPerusahaan,
-  } = useSWR(apiUrlDistribusiPerusahaan, fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 900000,
-  });
-
-  const apiUrlSertifikasiProfesi = `/api/praktisi-mengajar/sertifikasi-profesi-dosen-tetap?year=${
-    activeReportingYear || ''
-  }`;
-  const {
-    data: resultSertifikasiProfesi,
-    error: errorSertifikasiProfesi,
-    isLoading: isLoadingSertifikasiProfesi,
-  } = useSWR(apiUrlSertifikasiProfesi, fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 900000,
-  });
-
-  const apiUrlImportLog = `/api/import-logs/links-for-page?year=${
-    activeReportingYear || ''
-  }&page=${pageKey}`;
-  const {
-    data: resultImportLog,
-    error: errorImportLog,
-    isLoading: isLoadingImportLog,
-  } = useSWR(apiUrlImportLog, fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 900000,
-  });
+  const activeReportingYear = useReportingYearFilter(pageKey, filter);
+  const yearParam = activeReportingYear || '';
 
   const dashboardData = {
-    infoAgregatPraktisi: {
-      data: resultInfoAgregatPraktisi?.data,
-      isLoading: isLoadingInfoAgregatPraktisi,
-      error: errorInfoAgregatPraktisi,
-    },
-    distribusiJabatanDosen: {
-      data: resultDistribusiJabatanDosen?.data,
-      isLoading: isLoadingDistribusiJabatanDosen,
-      error: errorDistribusiJabatanDosen,
-    },
-    top5MataKuliah: {
-      data: resultTop5MataKuliah?.data,
-      isLoading: isLoadingTop5MataKuliah,
-      error: errorTop5MataKuliah,
-    },
-    distribusiPerusahaan: {
-      data: resultDistribusiPerusahaan?.data,
-      isLoading: isLoadingDistribusiPerusahaan,
-      error: errorDistribusiPerusahaan,
-    },
-    sertifikasiProfesi: {
-      data: resultSertifikasiProfesi?.data,
-      isLoading: isLoadingSertifikasiProfesi,
-      error: errorSertifikasiProfesi,
-    },
-    importLog: {
-      data: resultImportLog?.data,
-      isLoading: isLoadingImportLog,
-      error: errorImportLog,
-    },
+    infoAgregatPraktisi: useApiData(
+      `/api/praktisi-mengajar/info-agregat-praktisi-mengajar?year=${yearParam}`
+    ),
+    distribusiJabatanDosen: useApiData(
+      `/api/praktisi-mengajar/distribusi-jabatan-dosen?year=${yearParam}`
+    ),
+    top5MataKuliah: useApiData(
+      `/api/praktisi-mengajar/top5-mata-kuliah-praktisi-mengajar?year=${yearParam}`
+    ),
+    distribusiPerusahaan: useApiData(
+      `/api/praktisi-mengajar/distribusi-perusahaan-praktisi-mengajar?year=${yearParam}`
+    ),
+    sertifikasiProfesi: useApiData(
+      `/api/praktisi-mengajar/sertifikasi-profesi-dosen-tetap?year=${yearParam}`
+    ),
+    importLog: useApiData(
+      `/api/import-logs/links-for-page?year=${yearParam}&page=${pageKey}`
+    ),
   };
 
   return <PraktisiMengajarUI pageKey={pageKey} dashboardData={dashboardData} />;

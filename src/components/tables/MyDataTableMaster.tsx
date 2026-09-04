@@ -31,8 +31,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { ChevronDown, FileSpreadsheet, Info, Loader2 } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { ChevronDown, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { InfoTooltip } from '../ui/info-tooltip';
 
 interface MyDataTableMasterProps<TData> {
   columns: ColumnDef<TData>[];
@@ -72,6 +72,11 @@ export function MyDataTableMaster<TData>({
     getFilteredRowModel: getFilteredRowModel(),
     columnResizeMode: 'onChange',
     onColumnSizingChange: setColumnSizing,
+    defaultColumn: {
+      size: 140,
+      minSize: 80,
+      maxSize: 600,
+    },
     state: {
       sorting,
       globalFilter,
@@ -107,20 +112,16 @@ export function MyDataTableMaster<TData>({
 
   return (
     <div className="w-full">
-      <div className="bg-white px-10 pt-7 pb-2 rounded-2xl">
+      <div className="bg-white px-4 sm:px-6 lg:px-10 pt-7 pb-2 rounded-2xl">
         {title.trim() && (
-          <div className="flex flex-row justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col mb-7 gap-1">
               <div className="flex flex-row gap-2">
                 <p className="font-semibold text-xl text-blue-400">{title}</p>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Info className="w-5 h-5 text-blue-300 mt-1" />
-                  </TooltipTrigger>
-                  <TooltipContent side="right" align="center" sideOffset={-2}>
-                    <p>Navigate to page in description link</p>
-                  </TooltipContent>
-                </Tooltip>
+                <InfoTooltip
+                  content={<p>Navigate to page in description link</p>}
+                  className="w-5 h-5 text-blue-300 mt-1"
+                />
               </div>
               <p className="text-xs text-gray-500">{description}</p>
             </div>
@@ -138,13 +139,13 @@ export function MyDataTableMaster<TData>({
             </div>
           </div>
         )}
-        <div className="flex items-center mb-5">
+        <div className="flex flex-wrap items-center gap-2 mb-5">
           <Input
             ref={searchInputRef}
             placeholder={searchPlaceholder}
             value={globalFilter ?? ''}
             onChange={(event) => setGlobalFilter(event.target.value)}
-            className="max-w-sm"
+            className="w-full max-w-sm"
           />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -174,7 +175,10 @@ export function MyDataTableMaster<TData>({
           </DropdownMenu>
         </div>
         <div className="rounded-md border bg-white text-black">
-          <Table className="w-full table-fixed">
+          <Table
+            className="table-fixed"
+            style={{ width: table.getTotalSize(), minWidth: '100%' }}
+          >
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id} className="border-gray-700">

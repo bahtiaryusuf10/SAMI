@@ -4,6 +4,7 @@ import { DashboardProvider } from '@/contexts/DashboardContext';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
 import { QuickFilter } from '../settings/QuickFilter';
 import AddReportDialog from '../AddReportDialog';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { useUser } from '@/contexts/UserContext';
 import { SheetViewer } from '../SheetViewer';
 
@@ -62,20 +63,11 @@ export function LaporanAmiUI({
     <DashboardProvider isPublicView={isPublicView}>
       <>
         <div className="space-y-4">
-          <div className="flex w-full items-center justify-between px-2 pt-2 mb-8">
-            <div className="flex flex-col">
-              <h1 className="text-4xl font-semibold text-white">
-                Hasil Laporan AMI
-              </h1>
-              <div className="flex items-center mt-2 gap-1">
-                <p className=" text-white text-sm">
-                  Berikut merupakan dokumen hasil laporan AMI untuk aspek
-                  Indikator Kinerja Utama (IKU).
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {isPublicView ? (
+          <PageHeader
+            title="Hasil Laporan AMI"
+            description="Berikut merupakan dokumen hasil laporan AMI untuk aspek Indikator Kinerja Utama (IKU)."
+            actions={
+              isPublicView ? (
                 <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
                   <span className="font-normal">Data : </span>
                   <span className="font-bold">
@@ -92,9 +84,9 @@ export function LaporanAmiUI({
                   onValueChange={handleValueChange}
                   showAllOption={false}
                 />
-              )}
-            </div>
-          </div>
+              )
+            }
+          />
           <div className="px-2 py-0 flex flex-col gap-4 mb-8">
             <div className="w-full">
               <div className="-mx-4">

@@ -105,7 +105,7 @@ export default function Navbar({
       >
         <Menu className="w-5 h-5" />
       </Button>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         {can('import:data') && (
           <TooltipProvider>
             <Tooltip>
@@ -116,7 +116,10 @@ export default function Navbar({
                     <PopoverTrigger className="mt-0.5 bg-blue-300 rounded-2xl p-1 hover:bg-blue-200 cursor-pointer">
                       <HelpCircle className="w-5 h-5 text-white" />
                     </PopoverTrigger>
-                    <PopoverContent align="end" className="w-56 space-y-3">
+                    <PopoverContent
+                      align="end"
+                      className="w-[calc(100vw-2rem)] xs:w-56 space-y-3"
+                    >
                       <div className="space-y-2">
                         <h4 className="leading-none font-semibold">
                           Panduan Import
@@ -170,17 +173,17 @@ export default function Navbar({
           <AvatarImage src="https://github.com/shadcn.png" />
           <AvatarFallback>MA</AvatarFallback>
         </Avatar>
-        <div className="flex flex-col gap-y-1">
+        <div className="hidden xs:flex flex-col gap-y-1 min-w-0">
           {isLoadingUser ? (
             <div className="flex items-center justify-center">
               <Loader2 className="h-5 w-5 animate-spin text-white" />
             </div>
           ) : (
-            <div className="flex flex-col gap-1">
-              <span className="text-sm leading-3 font-medium text-white">
+            <div className="flex flex-col gap-1 min-w-0">
+              <span className="text-sm leading-3 font-medium text-white truncate max-w-25 sm:max-w-40">
                 {user?.full_name}
               </span>
-              <span className="text-[12px] text-gray-300 text-left">
+              <span className="text-[12px] text-gray-300 text-left truncate max-w-25 sm:max-w-40">
                 {user?.roles?.description || ''}
               </span>
             </div>

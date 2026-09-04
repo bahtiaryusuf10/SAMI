@@ -5,6 +5,7 @@ import { DashboardProvider } from '@/contexts/DashboardContext';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
 import { QuickFilter } from '../settings/QuickFilter';
 import { ShareButton } from '../ShareButton';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { MySingleValueChart } from '../charts/MySingleValueChart';
 import {
   AlertTriangle,
@@ -95,45 +96,39 @@ export function StandarInternasionalUI({
     <DashboardProvider isPublicView={isPublicView}>
       <>
         <div className="space-y-4">
-          <div className="flex w-full items-center justify-between px-2 pt-2 mb-8">
-            <div className="flex flex-col">
-              <h1 className="text-4xl font-semibold text-white">
-                Standar Internasional
-              </h1>
-              <div className="flex items-center mt-2 gap-1">
-                <p className=" text-white text-sm">
-                  IKU 8 Program studi berstandar internasional.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {isPublicView ? (
-                <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
-                  <span className="font-normal">Data : </span>
-                  <span className="font-bold">
-                    {initialActiveYear
-                      ? `Tahun Laporan ${initialActiveYear}`
-                      : 'Semua Tahun'}
-                  </span>
-                </div>
-              ) : (
-                <QuickFilter
-                  label="Tahun Laporan"
-                  apiUrl="/api/public/filters/tahun-laporan-by-tipe?types=accreditations"
-                  activeValue={activeReportingYear}
-                  onValueChange={handleValueChange}
-                  showAllOption={false}
-                />
-              )}
-              {!isPublicView && (
-                <ShareButton
-                  dashboardId={pageKey}
-                  activeFilterValue={activeReportingYear}
-                  filterQueryParamName="year"
-                />
-              )}
-            </div>
-          </div>
+          <PageHeader
+            title="Standar Internasional"
+            description="IKU 8 Program studi berstandar internasional."
+            actions={
+              <>
+                {isPublicView ? (
+                  <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
+                    <span className="font-normal">Data : </span>
+                    <span className="font-bold">
+                      {initialActiveYear
+                        ? `Tahun Laporan ${initialActiveYear}`
+                        : 'Semua Tahun'}
+                    </span>
+                  </div>
+                ) : (
+                  <QuickFilter
+                    label="Tahun Laporan"
+                    apiUrl="/api/public/filters/tahun-laporan-by-tipe?types=accreditations"
+                    activeValue={activeReportingYear}
+                    onValueChange={handleValueChange}
+                    showAllOption={false}
+                  />
+                )}
+                {!isPublicView && (
+                  <ShareButton
+                    dashboardId={pageKey}
+                    activeFilterValue={activeReportingYear}
+                    filterQueryParamName="year"
+                  />
+                )}
+              </>
+            }
+          />
           <div className="px-2 py-0 flex flex-col gap-4 mb-8">
             <div className="w-full">
               <div className="flex flex-wrap gap-4">
@@ -178,7 +173,7 @@ export function StandarInternasionalUI({
                 )}
               </div>
               <div className="-mx-4">
-                <div className="flex flex-row px-4 my-4 gap-4">
+                <div className="flex flex-col sm:flex-row px-4 my-4 gap-4">
                   <PdfViewer
                     url={
                       infoAkreditasi.data?.find(
@@ -186,6 +181,7 @@ export function StandarInternasionalUI({
                       )?.proof_url
                     }
                     title="Sertifikat Akreditasi Internasional"
+                    className="sm:flex-1 sm:min-w-0"
                   />
                   <PdfViewer
                     url={
@@ -194,12 +190,13 @@ export function StandarInternasionalUI({
                       )?.proof_url
                     }
                     title="Sertifikat Akreditasi Nasional"
+                    className="sm:flex-1 sm:min-w-0"
                   />
                 </div>
               </div>
               {!isPublicView && (
-                <div className="flex w-full items-start justify-end-safe px-2 mt-3 gap-2">
-                  <div className="flex items-center gap-2">
+                <div className="flex w-full flex-col items-end gap-2 px-2 mt-3 sm:flex-row sm:items-start sm:justify-end-safe">
+                  <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
                     {can('import:data') && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

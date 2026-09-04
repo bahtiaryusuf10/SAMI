@@ -1,16 +1,15 @@
 'use client';
 
-// import BubbleChat from '@/components/forms/BubbleChat';
 import ImportDialog from '@/components/ImportDialog';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
 import { DashboardSettings } from '../settings/DashboardSettings';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { QuickFilter } from '../settings/QuickFilter';
 import { ShareButton } from '../ShareButton';
 import { MySingleValueChart } from '../charts/MySingleValueChart';
 import {
   AlertTriangle,
-  ArrowUpDown,
   Factory,
   FileText,
   Handshake,
@@ -37,6 +36,7 @@ import {
 } from '../ui/dropdown-menu';
 import { useUser } from '@/contexts/UserContext';
 import { ExecutiveSummary } from '../ExecutiveSummary';
+import { SortableHeader } from '@/components/tables/SortableHeader';
 
 interface DataState<T> {
   data: T | null;
@@ -157,15 +157,7 @@ const cooperationColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'cooperation',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Bentuk
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Bentuk" />
       );
     },
     cell: ({ row }) => (
@@ -184,15 +176,7 @@ const cooperationColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'partner_name',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Mitra
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Mitra" />
       );
     },
     cell: ({ row }) => {
@@ -210,19 +194,18 @@ const cooperationColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'partner_type',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Jenis Mitra
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Jenis Mitra" />
       );
     },
     cell: ({ row }) => {
-      return <div className="text-center">{row.getValue('partner_type')}</div>;
+      return (
+        <div
+          className="text-center truncate"
+          title={row.getValue('partner_type')}
+        >
+          {row.getValue('partner_type')}
+        </div>
+      );
     },
     meta: {
       displayName: 'Jenis Mitra',
@@ -232,19 +215,18 @@ const cooperationColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'partner_level',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Tingkat Mitra
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Tingkat Mitra" />
       );
     },
     cell: ({ row }) => {
-      return <div className="text-center">{row.getValue('partner_level')}</div>;
+      return (
+        <div
+          className="text-center truncate"
+          title={row.getValue('partner_level')}
+        >
+          {row.getValue('partner_level')}
+        </div>
+      );
     },
     meta: {
       displayName: 'Tingkat Mitra',
@@ -254,15 +236,7 @@ const cooperationColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'year',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Tahun
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Tahun" />
       );
     },
     cell: ({ row }) => {
@@ -445,52 +419,46 @@ export function KerjaSamaGlobalUI({
     <DashboardProvider isPublicView={isPublicView}>
       <>
         <div className="space-y-4">
-          <div className="flex w-full items-center justify-between px-2 pt-2 mb-8">
-            <div className="flex flex-col">
-              <h1 className="text-4xl font-semibold text-white">
-                Kerja Sama Global
-              </h1>
-              <div className="flex items-center mt-2 gap-1">
-                <p className=" text-white text-sm">
-                  IKU 6 Program studi bekerjasama dengan mitra kelas dunia.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {isPublicView ? (
-                <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
-                  <span className="font-normal">Data : </span>
-                  <span className="font-bold">
-                    {initialActiveYear
-                      ? `Tahun Laporan ${initialActiveYear}`
-                      : 'Semua Tahun'}
-                  </span>
-                </div>
-              ) : (
-                <QuickFilter
-                  label="Tahun Laporan"
-                  apiUrl="/api/public/filters/tahun-laporan-by-tipe?types=cooperations"
-                  activeValue={activeReportingYear}
-                  onValueChange={handleValueChange}
-                  showAllOption={false}
+          <PageHeader
+            title="Kerja Sama Global"
+            description="IKU 6 Program studi bekerjasama dengan mitra kelas dunia."
+            actions={
+              <>
+                {isPublicView ? (
+                  <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
+                    <span className="font-normal">Data : </span>
+                    <span className="font-bold">
+                      {initialActiveYear
+                        ? `Tahun Laporan ${initialActiveYear}`
+                        : 'Semua Tahun'}
+                    </span>
+                  </div>
+                ) : (
+                  <QuickFilter
+                    label="Tahun Laporan"
+                    apiUrl="/api/public/filters/tahun-laporan-by-tipe?types=cooperations"
+                    activeValue={activeReportingYear}
+                    onValueChange={handleValueChange}
+                    showAllOption={false}
+                  />
+                )}
+                <DashboardSettings
+                  pageKey={pageKey}
+                  theme={theme}
+                  showLabels={showLabels}
+                  setPageTheme={setPageTheme}
+                  setPageShowLabels={setPageShowLabels}
                 />
-              )}
-              <DashboardSettings
-                pageKey={pageKey}
-                theme={theme}
-                showLabels={showLabels}
-                setPageTheme={setPageTheme}
-                setPageShowLabels={setPageShowLabels}
-              />
-              {!isPublicView && (
-                <ShareButton
-                  dashboardId={pageKey}
-                  activeFilterValue={activeReportingYear}
-                  filterQueryParamName="year"
-                />
-              )}
-            </div>
-          </div>
+                {!isPublicView && (
+                  <ShareButton
+                    dashboardId={pageKey}
+                    activeFilterValue={activeReportingYear}
+                    filterQueryParamName="year"
+                  />
+                )}
+              </>
+            }
+          />
           <div className="px-2 py-0 flex flex-col gap-4 mb-8">
             <div className="w-full">
               <div className="flex flex-wrap gap-4">
@@ -562,11 +530,11 @@ export function KerjaSamaGlobalUI({
                 isLoading={isDrilldownKerjaSamaLoading}
                 onExport={handleExportDrilldownData}
                 initialPageSize={8}
-                searchPlaceholder="Cari berdasarkan Bentuk Kerja Sama atau Mitra [ / ]"
+                searchPlaceholder="Cari Bentuk Kerja Sama atau Mitra [ / ]"
               />
               {!isPublicView && (
-                <div className="flex w-full items-start justify-end-safe px-2 mt-3 gap-2">
-                  <div className="flex items-center gap-2">
+                <div className="flex w-full flex-col items-end gap-2 px-2 mt-3 sm:flex-row sm:items-start sm:justify-end-safe">
+                  <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
                     {can('import:data') && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -649,7 +617,6 @@ export function KerjaSamaGlobalUI({
             </div>
           </div>
         </div>
-        {/* {!isPublicView && <BubbleChat />} */}
       </>
     </DashboardProvider>
   );

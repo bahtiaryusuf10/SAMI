@@ -1,15 +1,14 @@
 'use client';
 
-// import BubbleChat from '@/components/forms/BubbleChat';
 import ImportDialog from '@/components/ImportDialog';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
 import { QuickFilter } from '../settings/QuickFilter';
 import { DashboardSettings } from '../settings/DashboardSettings';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { ShareButton } from '../ShareButton';
 import {
   AlertTriangle,
-  ArrowUpDown,
   BookOpenCheck,
   FileText,
   Loader2,
@@ -38,6 +37,7 @@ import {
 } from '../ui/dropdown-menu';
 import { useUser } from '@/contexts/UserContext';
 import { ExecutiveSummary } from '../ExecutiveSummary';
+import { SortableHeader } from '@/components/tables/SortableHeader';
 
 interface DataState<T> {
   data: T | null;
@@ -166,15 +166,7 @@ const fundSourceColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'publication_title',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Judul
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Judul" />
       );
     },
     cell: ({ row }) => (
@@ -193,15 +185,7 @@ const fundSourceColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'authors',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Nama Dosen
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Nama Dosen" />
       );
     },
     cell: ({ row }) => {
@@ -259,21 +243,22 @@ const fundSourceColumns: ColumnDef<DataTable>[] = [
   },
   {
     accessorKey: 'source_fund',
+    size: 200,
+    minSize: 130,
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Sumber Dana
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Sumber Dana" />
       );
     },
     cell: ({ row }) => {
-      return <div className="text-center">{row.getValue('source_fund')}</div>;
+      return (
+        <div
+          className="text-center whitespace-normal break-words line-clamp-2"
+          title={row.getValue('source_fund')}
+        >
+          {row.getValue('source_fund')}
+        </div>
+      );
     },
     meta: {
       displayName: 'Sumber Dana',
@@ -283,15 +268,7 @@ const fundSourceColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'publication_year',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Tahun
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Tahun" />
       );
     },
     cell: ({ row }) => {
@@ -310,15 +287,7 @@ const externalActivityColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'lecturer_id',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            NIDN/NIDK
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="NIDN/NIDK" />
       );
     },
     cell: ({ row }) => (
@@ -337,15 +306,7 @@ const externalActivityColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'lecturer_name',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Nama Dosen
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Nama Dosen" />
       );
     },
     cell: ({ row }) => {
@@ -366,15 +327,7 @@ const externalActivityColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'highest_qualification',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Pendidikan Tertinggi
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Pendidikan Tertinggi" />
       );
     },
     cell: ({ row }) => {
@@ -625,52 +578,46 @@ export function AktivitasDosenUI({
     <DashboardProvider isPublicView={isPublicView}>
       <>
         <div className="space-y-4">
-          <div className="flex w-full items-center justify-between px-2 pt-2 mb-8">
-            <div className="flex flex-col">
-              <h1 className="text-4xl font-semibold text-white">
-                Aktivitas Dosen
-              </h1>
-              <div className="flex items-center mt-2 gap-1">
-                <p className=" text-white text-sm">
-                  IKU 3 Dosen berkegiatan di luar kampus.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {isPublicView ? (
-                <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
-                  <span className="font-normal">Data : </span>
-                  <span className="font-bold">
-                    {initialActiveYear
-                      ? `Tahun Laporan ${initialActiveYear}`
-                      : 'Semua Tahun'}
-                  </span>
-                </div>
-              ) : (
-                <QuickFilter
-                  label="Tahun Laporan"
-                  apiUrl="/api/public/filters/tahun-laporan-by-tipe?types=detasering-activities,teach-activities,research-services"
-                  activeValue={activeReportingYear}
-                  onValueChange={handleValueChange}
-                  showAllOption={false}
+          <PageHeader
+            title="Aktivitas Dosen"
+            description="IKU 3 Dosen berkegiatan di luar kampus."
+            actions={
+              <>
+                {isPublicView ? (
+                  <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
+                    <span className="font-normal">Data : </span>
+                    <span className="font-bold">
+                      {initialActiveYear
+                        ? `Tahun Laporan ${initialActiveYear}`
+                        : 'Semua Tahun'}
+                    </span>
+                  </div>
+                ) : (
+                  <QuickFilter
+                    label="Tahun Laporan"
+                    apiUrl="/api/public/filters/tahun-laporan-by-tipe?types=detasering-activities,teach-activities,research-services"
+                    activeValue={activeReportingYear}
+                    onValueChange={handleValueChange}
+                    showAllOption={false}
+                  />
+                )}
+                <DashboardSettings
+                  pageKey={pageKey}
+                  theme={theme}
+                  showLabels={showLabels}
+                  setPageTheme={setPageTheme}
+                  setPageShowLabels={setPageShowLabels}
                 />
-              )}
-              <DashboardSettings
-                pageKey={pageKey}
-                theme={theme}
-                showLabels={showLabels}
-                setPageTheme={setPageTheme}
-                setPageShowLabels={setPageShowLabels}
-              />
-              {!isPublicView && (
-                <ShareButton
-                  dashboardId={pageKey}
-                  activeFilterValue={activeReportingYear}
-                  filterQueryParamName="year"
-                />
-              )}
-            </div>
-          </div>
+                {!isPublicView && (
+                  <ShareButton
+                    dashboardId={pageKey}
+                    activeFilterValue={activeReportingYear}
+                    filterQueryParamName="year"
+                  />
+                )}
+              </>
+            }
+          />
           <div className="px-2 py-0 flex flex-col gap-4 mb-8">
             <div className="w-full">
               <div className="flex flex-wrap gap-4">
@@ -749,7 +696,7 @@ export function AktivitasDosenUI({
                     isLoading={isDrilldownPenelitianPkmLoading}
                     onExport={handleExportDrilldownData}
                     initialPageSize={5}
-                    searchPlaceholder="Cari berdasarkan Sumber Dana atau Judul [ / ]"
+                    searchPlaceholder="Cari Sumber Dana atau Judul [ / ]"
                   />
                   <DrilldownModal
                     isOpen={dataDosen !== null}
@@ -764,13 +711,13 @@ export function AktivitasDosenUI({
                     isLoading={isDrilldownDosenLoading}
                     onExport={handleExportDrilldownData}
                     initialPageSize={10}
-                    searchPlaceholder="Cari berdasarkan Nama Dosen atau NIDN/NIDK [ / ]"
+                    searchPlaceholder="Cari Nama Dosen atau NIDN/NIDK [ / ]"
                   />
                 </>
               )}
               {!isPublicView && (
-                <div className="flex w-full items-start justify-end-safe px-2 mt-3 gap-2">
-                  <div className="flex items-center gap-2">
+                <div className="flex w-full flex-col items-end gap-2 px-2 mt-3 sm:flex-row sm:items-start sm:justify-end-safe">
+                  <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
                     {can('import:data') && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -865,7 +812,6 @@ export function AktivitasDosenUI({
             </div>
           </div>
         </div>
-        {/* {!isPublicView && <BubbleChat />} */}
       </>
     </DashboardProvider>
   );

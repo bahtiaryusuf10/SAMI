@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronDown, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
@@ -170,21 +170,6 @@ export default function Sidebar({
     }, [] as SidebarSection[]);
   }, [can, isLoadingUser]);
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 640 && window.innerWidth < 768) {
-        setCollapsed(true);
-      } else {
-        setCollapsed(false);
-      }
-    };
-
-    handleResize();
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   const toggleDropdown = (label: string) => {
     setOpenDropdowns((prev) => ({
       ...prev,
@@ -200,9 +185,11 @@ export default function Sidebar({
 
   return (
     <div
-      className={`h-full bg-white shadow-md border-r transition-all duration-300 rounded-lg flex flex-col justify-between ${
-        collapsed ? 'w-16 items-center py-4' : 'w-48 lg:w-58 xl:w-68'
-      }`}
+      className={`min-h-full transition-all duration-300 flex flex-col justify-between ${
+        mobileSidebarOpen
+          ? ''
+          : 'bg-white shadow-md border-r rounded-lg'
+      } ${collapsed ? 'w-16 items-center py-4' : 'w-48 lg:w-58 xl:w-68'}`}
     >
       <div className="w-full">
         {collapsed ? (
