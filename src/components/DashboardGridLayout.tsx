@@ -23,6 +23,9 @@ const sizeConfigs = {
 };
 const DEFAULT_TYPE = 'medium';
 
+const colsConfig = { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 };
+const breakpointsConfig = { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 };
+
 type Size = keyof typeof sizeConfigs;
 
 interface ChildWithLayoutProps {
@@ -35,6 +38,44 @@ interface DashboardGridLayoutProps {
 }
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
+
+function buildLayoutForCols(
+  validChildren: { key: string; props: ChildWithLayoutProps }[],
+  cols: number
+) {
+  let currentX = 0;
+  let currentY = 0;
+  let rowMaxH = 0;
+
+  return validChildren.map(({ key, props }) => {
+    const type = props.type || DEFAULT_TYPE;
+    const config = sizeConfigs[type];
+    const w = Math.min(config.w, cols);
+    const minW = Math.min(config.minW, cols);
+
+    if (currentX + w > cols) {
+      currentY += rowMaxH;
+      currentX = 0;
+      rowMaxH = 0;
+    }
+
+    const layoutItem = {
+      i: key,
+      x: currentX,
+      y: currentY,
+      ...config,
+      w,
+      minW,
+    };
+
+    currentX += w;
+    if (config.h > rowMaxH) {
+      rowMaxH = config.h;
+    }
+
+    return layoutItem;
+  });
+}
 
 export function DashboardGridLayout({
   pageKey,
@@ -72,45 +113,21 @@ export function DashboardGridLayout({
         return;
       }
 
-      let currentX = 0;
-      let currentY = 0;
-      let rowMaxH = 0;
-
-      const defaultLayout = Children.toArray(children).map((child) => {
+      const validChildren = Children.toArray(children).map((child) => {
         if (!isValidElement(child) || !child.key) {
           throw new Error(
             "DashboardGridLayout child must have a unique 'key' prop."
           );
         }
 
-        const props = child.props as ChildWithLayoutProps;
-        const type = props.type || DEFAULT_TYPE;
-        const config = sizeConfigs[type];
-
-        if (currentX + config.w > 12) {
-          currentY += rowMaxH;
-          currentX = 0;
-          rowMaxH = 0;
-        }
-
-        const layoutItem = {
-          i: child.key.toString(),
-          x: currentX,
-          y: currentY,
-          ...config,
+        return {
+          key: child.key.toString(),
+          props: child.props as ChildWithLayoutProps,
         };
-
-        currentX += config.w;
-        if (config.h > rowMaxH) {
-          rowMaxH = config.h;
-        }
-
-        return layoutItem;
       });
 
-      const breakpoints = ['lg', 'md', 'sm', 'xs', 'xxs'];
-      breakpoints.forEach((bp) => {
-        finalLayouts[bp] = defaultLayout;
+      Object.entries(colsConfig).forEach(([bp, cols]) => {
+        finalLayouts[bp] = buildLayoutForCols(validChildren, cols);
       });
 
       // console.log('finalLayouts digenerate ulang :  ', finalLayouts);
@@ -151,8 +168,8 @@ export function DashboardGridLayout({
     //   </button>
     <ResponsiveGridLayout
       className="layout"
-      breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-      cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+      breakpoints={breakpointsConfig}
+      cols={colsConfig}
       rowHeight={100}
       autoSize={true}
       isDraggable={true}

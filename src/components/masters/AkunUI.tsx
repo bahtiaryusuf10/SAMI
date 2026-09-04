@@ -1,9 +1,10 @@
 'use client';
 
 import { DashboardProvider } from '@/contexts/DashboardContext';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { MyDataTableMaster } from '../tables/MyDataTableMaster';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
   AlertDialog,
@@ -29,6 +30,7 @@ import {
   deleteUser,
   updateUserRole,
 } from '@/app/(dashboard)/(protected_admin)/kelola-akun/akun/actions';
+import { SortableHeader } from '@/components/tables/SortableHeader';
 
 interface DataState<T> {
   data: T | null;
@@ -71,15 +73,7 @@ export const accountColumns = (
     accessorKey: 'full_name',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Nama
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Nama" />
       );
     },
     cell: ({ row }) => {
@@ -100,15 +94,7 @@ export const accountColumns = (
     accessorKey: 'email',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Email
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Email" />
       );
     },
     cell: ({ row }) => {
@@ -251,23 +237,17 @@ export function AkunUI({
     <DashboardProvider isPublicView={isPublicView}>
       <>
         <div className="space-y-4">
-          <div className="flex w-full items-center justify-between px-2 pt-2 mb-8">
-            <div className="flex flex-col">
-              <h1 className="text-4xl font-semibold text-white">Data Akun</h1>
-              <div className="flex items-center mt-2 gap-1">
-                <p className=" text-white text-sm">
-                  Berikut adalah daftar akun yang terdaftar dalam sistem.
-                </p>
-              </div>
-            </div>
-          </div>
+          <PageHeader
+            title="Data Akun"
+            description="Berikut adalah daftar akun yang terdaftar dalam sistem."
+          />
           <div className="px-2 py-0 flex flex-col gap-4 mb-8">
             <div className="w-full">
               <div className="px-1 mb-5">
                 <MyDataTableMaster
                   columns={columns}
                   data={dataAkun.data || []}
-                  searchPlaceholder="Cari berdasarkan Nama atau Email [ / ]"
+                  searchPlaceholder="Cari Nama atau Email [ / ]"
                   isLoading={dataAkun.isLoading}
                 />
               </div>

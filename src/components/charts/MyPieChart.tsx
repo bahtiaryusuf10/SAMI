@@ -2,12 +2,8 @@
 
 import { ColorSchemeId, colorSchemes } from '@nivo/colors';
 import { ResponsivePie } from '@nivo/pie';
-import { AlertTriangle, Info, Loader2 } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { AlertTriangle, Loader2 } from 'lucide-react';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { PieChartSettings } from '../settings/PieChartSettings';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
@@ -145,14 +141,7 @@ export const MyPieChart = ({
               {title}
             </h2>
             {drillDown && can('interact:charts') && (
-              <Tooltip>
-                <TooltipTrigger>
-                  <Info className="w-5 h-5 text-blue-300" />
-                </TooltipTrigger>
-                <TooltipContent side="right" align="center" sideOffset={-2}>
-                  <p>Drill down data</p>
-                </TooltipContent>
-              </Tooltip>
+              <InfoTooltip content={<p>Drill down data</p>} />
             )}
             <TargetInfo targets={targets} />
           </div>

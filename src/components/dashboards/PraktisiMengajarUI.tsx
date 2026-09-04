@@ -1,16 +1,15 @@
 'use client';
 
-// import BubbleChat from '@/components/forms/BubbleChat';
 import ImportDialog from '@/components/ImportDialog';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
 import { QuickFilter } from '../settings/QuickFilter';
 import { DashboardSettings } from '../settings/DashboardSettings';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { ShareButton } from '../ShareButton';
 import { MySingleValueChart } from '../charts/MySingleValueChart';
 import {
   AlertTriangle,
-  ArrowUpDown,
   BadgeCheck,
   FileText,
   GraduationCap,
@@ -38,6 +37,7 @@ import {
 } from '../ui/dropdown-menu';
 import { useUser } from '@/contexts/UserContext';
 import { ExecutiveSummary } from '../ExecutiveSummary';
+import { SortableHeader } from '@/components/tables/SortableHeader';
 
 interface DataState<T> {
   data: T | null;
@@ -155,15 +155,7 @@ const practitionerColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'practitioner_name',
     header: ({ column }) => {
       return (
-        <div className="text-left">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Nama Praktisi
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Nama Praktisi" />
       );
     },
     cell: ({ row }) => (
@@ -177,21 +169,20 @@ const practitionerColumns: ColumnDef<DataTable>[] = [
   },
   {
     accessorKey: 'profession',
+    size: 180,
+    minSize: 120,
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Profesi
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Profesi" />
       );
     },
     cell: ({ row }) => (
-      <div className="text-center">{row.getValue('profession')}</div>
+      <div
+        className="text-center whitespace-normal break-words line-clamp-2"
+        title={row.getValue('profession')}
+      >
+        {row.getValue('profession')}
+      </div>
     ),
     meta: {
       displayName: 'Profesi',
@@ -199,21 +190,20 @@ const practitionerColumns: ColumnDef<DataTable>[] = [
   },
   {
     accessorKey: 'workplace',
+    size: 250,
+    minSize: 160,
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Perusahaan
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Perusahaan" />
       );
     },
     cell: ({ row }) => (
-      <div className="text-center">{row.getValue('workplace')}</div>
+      <div
+        className="text-center whitespace-normal break-words line-clamp-2"
+        title={row.getValue('workplace')}
+      >
+        {row.getValue('workplace')}
+      </div>
     ),
     meta: {
       displayName: 'Perusahaan',
@@ -223,15 +213,7 @@ const practitionerColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'teaching_date',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Waktu Mengajar
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Waktu Mengajar" />
       );
     },
     cell: ({ row }) => (
@@ -499,52 +481,46 @@ export function PraktisiMengajarUI({
     <DashboardProvider isPublicView={isPublicView}>
       <>
         <div className="space-y-4">
-          <div className="flex w-full items-center justify-between px-2 pt-2 mb-8">
-            <div className="flex flex-col">
-              <h1 className="text-4xl font-semibold text-white">
-                Praktisi Mengajar
-              </h1>
-              <div className="flex items-center mt-2 gap-1">
-                <p className=" text-white text-sm">
-                  IKU 4 Praktisi mengajar di dalam kampus.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {isPublicView ? (
-                <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
-                  <span className="font-normal">Data : </span>
-                  <span className="font-bold">
-                    {initialActiveYear
-                      ? `Tahun Laporan ${initialActiveYear}`
-                      : 'Semua Tahun'}
-                  </span>
-                </div>
-              ) : (
-                <QuickFilter
-                  label="Tahun Laporan"
-                  apiUrl="/api/public/filters/tahun-laporan-by-tipe?types=practitioner-teachings,field-experiences"
-                  activeValue={activeReportingYear}
-                  onValueChange={handleValueChange}
-                  showAllOption={false}
+          <PageHeader
+            title="Praktisi Mengajar"
+            description="IKU 4 Praktisi mengajar di dalam kampus."
+            actions={
+              <>
+                {isPublicView ? (
+                  <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
+                    <span className="font-normal">Data : </span>
+                    <span className="font-bold">
+                      {initialActiveYear
+                        ? `Tahun Laporan ${initialActiveYear}`
+                        : 'Semua Tahun'}
+                    </span>
+                  </div>
+                ) : (
+                  <QuickFilter
+                    label="Tahun Laporan"
+                    apiUrl="/api/public/filters/tahun-laporan-by-tipe?types=practitioner-teachings,field-experiences"
+                    activeValue={activeReportingYear}
+                    onValueChange={handleValueChange}
+                    showAllOption={false}
+                  />
+                )}
+                <DashboardSettings
+                  pageKey={pageKey}
+                  theme={theme}
+                  showLabels={showLabels}
+                  setPageTheme={setPageTheme}
+                  setPageShowLabels={setPageShowLabels}
                 />
-              )}
-              <DashboardSettings
-                pageKey={pageKey}
-                theme={theme}
-                showLabels={showLabels}
-                setPageTheme={setPageTheme}
-                setPageShowLabels={setPageShowLabels}
-              />
-              {!isPublicView && (
-                <ShareButton
-                  dashboardId={pageKey}
-                  activeFilterValue={activeReportingYear}
-                  filterQueryParamName="year"
-                />
-              )}
-            </div>
-          </div>
+                {!isPublicView && (
+                  <ShareButton
+                    dashboardId={pageKey}
+                    activeFilterValue={activeReportingYear}
+                    filterQueryParamName="year"
+                  />
+                )}
+              </>
+            }
+          />
           <div className="px-2 py-0 flex flex-col gap-4 mb-8">
             <div className="w-full">
               <div className="flex flex-wrap gap-4">
@@ -636,11 +612,11 @@ export function PraktisiMengajarUI({
                 isLoading={isDrilldownPraktisiLoading}
                 onExport={handleExportDrilldownData}
                 initialPageSize={5}
-                searchPlaceholder="Cari berdasarkan Nama [ / ]"
+                searchPlaceholder="Cari Nama [ / ]"
               />
               {!isPublicView && (
-                <div className="flex w-full items-start justify-end-safe px-2 mt-3 gap-2">
-                  <div className="flex items-center gap-2">
+                <div className="flex w-full flex-col items-end gap-2 px-2 mt-3 sm:flex-row sm:items-start sm:justify-end-safe">
+                  <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
                     {can('import:data') && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -729,7 +705,6 @@ export function PraktisiMengajarUI({
             </div>
           </div>
         </div>
-        {/* {!isPublicView && <BubbleChat />} */}
       </>
     </DashboardProvider>
   );

@@ -5,7 +5,6 @@ import { MyBarChart } from '@/components/charts/MyBarChart';
 import { MyPieChart } from '@/components/charts/MyPieChart';
 import { MySingleValueChart } from '@/components/charts/MySingleValueChart';
 import { DashboardGridLayout } from '@/components/DashboardGridLayout';
-// import BubbleChat from '@/components/forms/BubbleChat';
 import ImportDialog from '@/components/ImportDialog';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,11 +13,11 @@ import {
   AlertTriangle,
   Wallet,
   Hourglass,
-  ArrowUpDown,
   FileText,
   Upload,
 } from 'lucide-react';
 import { DashboardSettings } from '@/components/settings/DashboardSettings';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { ShareButton } from '@/components/ShareButton';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
 import { DashboardProvider } from '@/contexts/DashboardContext';
@@ -36,6 +35,7 @@ import {
 } from '../ui/dropdown-menu';
 import { useUser } from '@/contexts/UserContext';
 import { ExecutiveSummary } from '../ExecutiveSummary';
+import { SortableHeader } from '@/components/tables/SortableHeader';
 
 interface DataState<T> {
   data: T | null;
@@ -157,21 +157,14 @@ type DashboardId = (typeof dashboardConfig)[number]['id'];
 const workplaceColumns: ColumnDef<DataTable>[] = [
   {
     accessorKey: 'label',
+    size: 400,
+    minSize: 200,
+    maxSize: 600,
     header: ({ column }) => {
-      return (
-        <div className="text-left w-[400px]">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Nama Perusahaan
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      );
+      return <SortableHeader column={column} label="Nama Perusahaan" />;
     },
     cell: ({ row }) => (
-      <div className="text-left w-[400px] truncate">
+      <div className="text-left w-full truncate">
         {row.getValue('label')}
       </div>
     ),
@@ -181,17 +174,12 @@ const workplaceColumns: ColumnDef<DataTable>[] = [
   },
   {
     accessorKey: 'value',
+    size: 170,
+    minSize: 120,
+    maxSize: 300,
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Jumlah Lulusan
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Jumlah Lulusan" />
       );
     },
     cell: ({ row }) => (
@@ -491,52 +479,46 @@ export function LulusanBekerjaUI({
     <DashboardProvider isPublicView={isPublicView}>
       <>
         <div className="space-y-4">
-          <div className="flex w-full items-center justify-between px-2 pt-2 mb-8">
-            <div className="flex flex-col">
-              <h1 className="text-4xl font-semibold text-white">
-                Lulusan Bekerja
-              </h1>
-              <div className="flex items-center mt-2 gap-1">
-                <p className=" text-white text-sm">
-                  IKU 1 Lulusan mendapatkan pekerjaan yang layak.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {isPublicView ? (
-                <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
-                  <span className="font-normal">Data : </span>
-                  <span className="font-bold">
-                    {initialActiveYear
-                      ? `Tahun Laporan ${initialActiveYear}`
-                      : 'Semua Tahun'}
-                  </span>
-                </div>
-              ) : (
-                <QuickFilter
-                  label="Tahun Laporan"
-                  apiUrl="/api/public/filters/tahun-laporan-by-tipe?types=tracer-studies,graduates"
-                  activeValue={activeReportingYear}
-                  onValueChange={handleValueChange}
-                  showAllOption={false}
+          <PageHeader
+            title="Lulusan Bekerja"
+            description="IKU 1 Lulusan mendapatkan pekerjaan yang layak."
+            actions={
+              <>
+                {isPublicView ? (
+                  <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
+                    <span className="font-normal">Data : </span>
+                    <span className="font-bold">
+                      {initialActiveYear
+                        ? `Tahun Laporan ${initialActiveYear}`
+                        : 'Semua Tahun'}
+                    </span>
+                  </div>
+                ) : (
+                  <QuickFilter
+                    label="Tahun Laporan"
+                    apiUrl="/api/public/filters/tahun-laporan-by-tipe?types=tracer-studies,graduates"
+                    activeValue={activeReportingYear}
+                    onValueChange={handleValueChange}
+                    showAllOption={false}
+                  />
+                )}
+                <DashboardSettings
+                  pageKey={pageKey}
+                  theme={theme}
+                  showLabels={showLabels}
+                  setPageTheme={setPageTheme}
+                  setPageShowLabels={setPageShowLabels}
                 />
-              )}
-              <DashboardSettings
-                pageKey={pageKey}
-                theme={theme}
-                showLabels={showLabels}
-                setPageTheme={setPageTheme}
-                setPageShowLabels={setPageShowLabels}
-              />
-              {!isPublicView && (
-                <ShareButton
-                  dashboardId={pageKey}
-                  activeFilterValue={activeReportingYear}
-                  filterQueryParamName="year"
-                />
-              )}
-            </div>
-          </div>
+                {!isPublicView && (
+                  <ShareButton
+                    dashboardId={pageKey}
+                    activeFilterValue={activeReportingYear}
+                    filterQueryParamName="year"
+                  />
+                )}
+              </>
+            }
+          />
           <div className="px-2 py-0 flex flex-col gap-4 mb-8">
             <div className="w-full">
               <div className="flex flex-wrap gap-4">
@@ -610,11 +592,11 @@ export function LulusanBekerjaUI({
                 isLoading={isDrilldownTempatBekerjaLoading}
                 onExport={handleExportDrilldownData}
                 initialPageSize={8}
-                searchPlaceholder="Cari berdasarkan Nama Perusahaan [ / ]"
+                searchPlaceholder="Cari Nama Perusahaan [ / ]"
               />
               {!isPublicView && (
-                <div className="flex w-full items-start justify-end-safe px-2 mt-3 gap-2">
-                  <div className="flex items-center gap-2">
+                <div className="flex w-full flex-col items-end gap-2 px-2 mt-3 sm:flex-row sm:items-start sm:justify-end-safe">
+                  <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
                     {can('import:data') && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -703,7 +685,6 @@ export function LulusanBekerjaUI({
             </div>
           </div>
         </div>
-        {/* {!isPublicView && <BubbleChat />} */}
       </>
     </DashboardProvider>
   );

@@ -75,6 +75,7 @@ export function DrilldownModal<TData>({
             </div>
           ) : (
             <MyDataTableMaster
+              key={`${title}-${description}`}
               columns={columns}
               data={data || []}
               searchPlaceholder={searchPlaceholder}

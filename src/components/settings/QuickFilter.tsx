@@ -49,7 +49,7 @@ export function QuickFilter({
         onValueChange={onValueChange}
         disabled={isLoading}
       >
-        <SelectTrigger className="w-[128px] bg-white">
+        <SelectTrigger className="w-32 shrink-0 bg-white">
           <SelectValue placeholder={isLoading ? 'Memuat...' : 'Pilih tahun'} />
         </SelectTrigger>
         <SelectContent>

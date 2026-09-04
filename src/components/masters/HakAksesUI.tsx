@@ -2,6 +2,7 @@
 'use client';
 
 import { DashboardProvider } from '@/contexts/DashboardContext';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { toast } from 'sonner';
 import { KeyedMutator } from 'swr';
 import {
@@ -86,19 +87,10 @@ export function HakAksesUI({
     <DashboardProvider isPublicView={isPublicView}>
       <>
         <div className="space-y-4">
-          <div className="flex w-full items-center justify-between px-2 pt-2 mb-8">
-            <div className="flex flex-col">
-              <h1 className="text-4xl font-semibold text-white">
-                Data Hak Akses
-              </h1>
-              <div className="flex items-center mt-2 gap-1">
-                <p className=" text-white text-sm">
-                  Berikut adalah daftar Hak Akses, anda dapat mengelola hak
-                  akses untuk setiap peran yang ada di dalam sistem.
-                </p>
-              </div>
-            </div>
-          </div>
+          <PageHeader
+            title="Data Hak Akses"
+            description="Berikut adalah daftar Hak Akses, anda dapat mengelola hak akses untuk setiap peran yang ada di dalam sistem."
+          />
           <div className="px-2 py-0 flex flex-col gap-4 mb-8">
             <div className="w-full px-1">
               <div className="mt-3 rounded-xl overflow-hidden bg-card">

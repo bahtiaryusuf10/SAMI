@@ -3,12 +3,8 @@
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
 import { ResponsiveBar } from '@nivo/bar';
 import { ColorSchemeId } from '@nivo/colors';
-import { AlertTriangle, Info, Loader2 } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { AlertTriangle, Loader2 } from 'lucide-react';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { useMemo, useRef, useState } from 'react';
 import { BarChartSettings } from '../settings/BarChartSettings';
 import { exportAsPng, exportAsXlsx } from '@/lib/utils/handleExportFile';
@@ -138,14 +134,7 @@ export const MyBarChart = ({
               {title}
             </h2>
             {drillDown && can('interact:charts') && (
-              <Tooltip>
-                <TooltipTrigger>
-                  <Info className="w-5 h-5 text-blue-300" />
-                </TooltipTrigger>
-                <TooltipContent side="right" align="center" sideOffset={-2}>
-                  <p>Drill down data</p>
-                </TooltipContent>
-              </Tooltip>
+              <InfoTooltip content={<p>Drill down data</p>} />
             )}
             <TargetInfo targets={targets} />
           </div>
@@ -201,7 +190,8 @@ export const MyBarChart = ({
               margin={{
                 top: 20,
                 right: layout === 'vertical' ? 20 : 30,
-                bottom: 50,
+                bottom:
+                  layout === 'vertical' && sortedData.length > 3 ? 95 : 50,
                 left: layout === 'vertical' ? 60 : 115,
               }}
               padding={0.3}
@@ -243,12 +233,14 @@ export const MyBarChart = ({
               axisBottom={{
                 tickSize: 5,
                 tickPadding: 5,
-                tickRotation: 0,
+                tickRotation:
+                  layout === 'vertical' && sortedData.length > 3 ? -35 : 0,
                 truncateTickAt: sortedData.length > 4 ? 17 : 21,
                 legend:
                   layout === 'vertical' ? axisBottomLegend : axisLeftLegend,
                 legendPosition: 'middle',
-                legendOffset: 40,
+                legendOffset:
+                  layout === 'vertical' && sortedData.length > 3 ? 80 : 40,
                 format: (value) => normalizeTitleCase(value),
               }}
               axisLeft={{

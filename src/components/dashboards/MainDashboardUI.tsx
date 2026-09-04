@@ -3,12 +3,12 @@
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { useDashboardSettingsStore } from '@/stores/dashboardSettings';
 import { DashboardSettings } from '../settings/DashboardSettings';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { QuickFilter } from '../settings/QuickFilter';
 import { ShareButton } from '../ShareButton';
 import { MySingleValueChart } from '../charts/MySingleValueChart';
 import {
   AlertTriangle,
-  ArrowUpDown,
   BookOpen,
   Briefcase,
   BriefcaseBusiness,
@@ -21,7 +21,6 @@ import {
   Target,
   X,
 } from 'lucide-react';
-import { Button } from '../ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import { MyDataTableMaster } from '../tables/MyDataTableMaster';
 import Link from 'next/link';
@@ -32,6 +31,7 @@ import { MyLineChart } from '../charts/MyLineChart';
 import { ExecutiveSummary } from '../ExecutiveSummary';
 import { exportAsXlsx } from '@/lib/utils/handleExportFile';
 import { toast } from 'sonner';
+import { SortableHeader } from '@/components/tables/SortableHeader';
 
 interface DataState<T> {
   data: T | null;
@@ -142,15 +142,7 @@ const kpiColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'kpi_group',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            KPI
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="KPI" />
       );
     },
     cell: ({ row }) => (
@@ -166,19 +158,15 @@ const kpiColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'kpi_key',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Metrik
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Metrik" />
       );
     },
     cell: ({ row }) => {
-      return <div className="text-center">{row.getValue('kpi_key')}</div>;
+      return (
+        <div className="text-center truncate" title={row.getValue('kpi_key')}>
+          {row.getValue('kpi_key')}
+        </div>
+      );
     },
     meta: {
       displayName: 'Metrik',
@@ -188,15 +176,7 @@ const kpiColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'description',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Deskripsi
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Deskripsi" />
       );
     },
     cell: ({ row }) => {
@@ -224,15 +204,7 @@ const kpiColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'target_value',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Target
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Target" />
       );
     },
     cell: ({ row }) => {
@@ -262,15 +234,7 @@ const kpiColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'actual_value',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Capaian
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Capaian" />
       );
     },
     cell: ({ row }) => {
@@ -301,15 +265,7 @@ const kpiColumns: ColumnDef<DataTable>[] = [
     accessorKey: 'status',
     header: ({ column }) => {
       return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Status
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <SortableHeader column={column} label="Status" />
       );
     },
     cell: ({ row }) => {
@@ -444,56 +400,49 @@ export function MainDashboardUI({
     <DashboardProvider isPublicView={isPublicView}>
       <>
         <div className="space-y-4">
-          <div className="flex w-full items-center justify-between px-2 pt-2 mb-8">
-            <div className="flex flex-col">
-              <h1 className="text-4xl font-semibold text-white">
-                Main Dashboard
-              </h1>
-              <div className="flex items-center mt-2 gap-1">
-                <p className=" text-white text-sm">
-                  Halaman ini menyediakan ringkasan mengenai kinerja dari setiap
-                  Indikator Kinerja Utama (IKU).
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {isPublicView ? (
-                <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
-                  <span className="font-normal">Data : </span>
-                  <span className="font-bold">
-                    {initialActiveYear
-                      ? `Tahun Laporan ${initialActiveYear}`
-                      : 'Semua Tahun'}
-                  </span>
-                </div>
-              ) : (
-                <QuickFilter
-                  label="Tahun Laporan"
-                  apiUrl="/api/public/filters/tahun-laporan"
-                  activeValue={activeReportingYear}
-                  onValueChange={handleValueChange}
-                  showAllOption={false}
+          <PageHeader
+            title="Main Dashboard"
+            description="Halaman ini menyediakan ringkasan mengenai kinerja dari setiap Indikator Kinerja Utama (IKU)."
+            actions={
+              <>
+                {isPublicView ? (
+                  <div className="text-white bg-white/30 px-4 py-2 rounded-lg text-sm">
+                    <span className="font-normal">Data : </span>
+                    <span className="font-bold">
+                      {initialActiveYear
+                        ? `Tahun Laporan ${initialActiveYear}`
+                        : 'Semua Tahun'}
+                    </span>
+                  </div>
+                ) : (
+                  <QuickFilter
+                    label="Tahun Laporan"
+                    apiUrl="/api/public/filters/tahun-laporan"
+                    activeValue={activeReportingYear}
+                    onValueChange={handleValueChange}
+                    showAllOption={false}
+                  />
+                )}
+                <DashboardSettings
+                  pageKey={pageKey}
+                  theme={theme}
+                  showLabels={showLabels}
+                  setPageTheme={setPageTheme}
+                  setPageShowLabels={setPageShowLabels}
                 />
-              )}
-              <DashboardSettings
-                pageKey={pageKey}
-                theme={theme}
-                showLabels={showLabels}
-                setPageTheme={setPageTheme}
-                setPageShowLabels={setPageShowLabels}
-              />
-              {!isPublicView && (
-                <ShareButton
-                  dashboardId={pageKey}
-                  activeFilterValue={activeReportingYear}
-                  filterQueryParamName="year"
-                />
-              )}
-            </div>
-          </div>
+                {!isPublicView && (
+                  <ShareButton
+                    dashboardId={pageKey}
+                    activeFilterValue={activeReportingYear}
+                    filterQueryParamName="year"
+                  />
+                )}
+              </>
+            }
+          />
           <div className="px-2 py-0 flex flex-col gap-4 mb-8">
             <div className="w-full">
-              <div className="flex flex-wrap gap-4 mx-45">
+              <div className="flex flex-wrap gap-4">
                 {infoAgregatRingkasan.isLoading ? (
                   <div className="flex justify-center items-center w-full h-[50px] rounded-xl bg-white">
                     <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
@@ -659,7 +608,7 @@ export function MainDashboardUI({
                 <MyDataTableMaster
                   columns={kpiColumns}
                   data={detailCapaianKpi.data || []}
-                  searchPlaceholder="Cari berdasarkan IKU atau Deskripsi [ / ]"
+                  searchPlaceholder="Cari IKU atau Deskripsi [ / ]"
                   isLoading={detailCapaianKpi.isLoading}
                   initialPageSize={8}
                   title="Ketercapaian Indikator Kinerja Utama (IKU)"
@@ -668,7 +617,7 @@ export function MainDashboardUI({
                 />
               </div>
               {!isPublicView && (
-                <div className="flex w-full items-start justify-end-safe px-2 mt-3 gap-2">
+                <div className="flex w-full flex-col items-end gap-2 px-2 mt-3 sm:flex-row sm:items-start sm:justify-end-safe">
                   <ExecutiveSummary
                     pageKey={pageKey}
                     dataForSummary={summaryData}
