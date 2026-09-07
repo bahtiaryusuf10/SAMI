@@ -1,5 +1,3 @@
-import { toPng } from 'html-to-image';
-import ExcelJS from 'exceljs';
 import { toast } from 'sonner';
 import { ColumnDef } from '@tanstack/react-table';
 
@@ -20,22 +18,23 @@ const formatFileName = (baseTitle: string): string => {
   return `${safeTitle}_${localTimestamp}`;
 };
 
-export const exportAsPng = (element: HTMLElement, title: string) => {
-  toPng(element, { cacheBust: true })
-    .then((dataUrl) => {
-      const link = document.createElement('a');
-      link.download = `${formatFileName(title)}.png`;
-      link.href = dataUrl;
-      link.click();
-    })
-    .catch((e) => {
-      if (e instanceof Error) {
-        console.error('Error exporting PNG :', e);
-        toast.error('Export failed', {
-          description: e.message,
-        });
-      }
-    });
+export const exportAsPng = async (element: HTMLElement, title: string) => {
+  try {
+    const { toPng } = await import('html-to-image');
+    const dataUrl = await toPng(element, { cacheBust: true });
+
+    const link = document.createElement('a');
+    link.download = `${formatFileName(title)}.png`;
+    link.href = dataUrl;
+    link.click();
+  } catch (e) {
+    if (e instanceof Error) {
+      console.error('Error exporting PNG :', e);
+      toast.error('Export failed', {
+        description: e.message,
+      });
+    }
+  }
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,6 +48,7 @@ export const exportAsXlsx = async (data: any[], title: string, columns?: ColumnD
   }
 
   try {
+    const { default: ExcelJS } = await import('exceljs');
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Data');
 
