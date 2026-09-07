@@ -68,6 +68,7 @@ export default function LoginPage() {
             alt="logo"
             width={811}
             height={68}
+            priority
             style={{ width: 'auto', height: 'auto' }}
             className="transition-all duration-300 ease-in-out hover:-translate-y-2 hover:drop-shadow-xl"
           />
